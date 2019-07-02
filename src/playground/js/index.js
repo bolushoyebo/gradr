@@ -72,17 +72,21 @@ const setupSignIn = () => {
 };
 
 const fetchImpliedAssessment = () => {
-  notify('Still busy, please wait ...');
-  const assessmentId = testId
-    .split('')
-    .reverse()
-    .join('');
+  try {
+    notify('Still busy, please wait ...');
+    const assessmentId = testId
+      .split('')
+      .reverse()
+      .join('');
 
-  return firebase
-    .firestore()
-    .collection('assessments')
-    .get()
-    .then(snapshot => snapshot.docs.find(doc => doc.id === assessmentId));
+    return firebase
+      .firestore()
+      .collection('assessments')
+      .doc(assessmentId)
+      .get();
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const assessmentIsLive = assessmentDoc => {
