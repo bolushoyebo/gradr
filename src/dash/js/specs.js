@@ -2,8 +2,8 @@ import firebase from 'firebase/app';
 
 import marked from 'marked';
 import { html, render } from "lit-html";
-import { monacoCreate } from '../../commons/js/monaco-init.js';
-import language from '../../commons/js/monaco-lang';
+import { monacoCreate } from '../../commons/js/monacoEditor/monaco-init.js';
+import language from '../../commons/js/monacoEditor/monaco-lang';
 
 import {
   select,

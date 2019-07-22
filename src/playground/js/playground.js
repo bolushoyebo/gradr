@@ -13,8 +13,8 @@ import {
   dateTimeDiff,
   isWithinDeadline
 } from '../../commons/js/utils.js';
-import language from '../../commons/js/monaco-lang';
-import { monacoCreate } from '../../commons/js/monaco-init';
+import language from '../../commons/js/monacoEditor/monaco-lang';
+import { monacoCreate } from '../../commons/js/monacoEditor/monaco-init';
 
 let spec;
 let toast;
