@@ -17,6 +17,7 @@ import {
   selectAll
 } from '../../commons/js/utils.js';
 
+let toast;
 let chart;
 let builtUI = false;
 let assessment = {};
@@ -34,6 +35,23 @@ const SUBMISSIONS = firebase.firestore().collection('submissions');
 const testsListEl = select('#tests-list');
 const saveTestBtn = select(`[data-action='save-test']`);
 const extractTestIDBtn = select(`[data-action='extract-test-id']`);
+
+
+const notify = (msg) => {
+  let message = trim(msg);
+  if (message === '') return;
+
+  if(message === 'ERROR') {
+    message = `Ooops something went wrong!`;
+  }
+
+  const toastr = select('#intro-toast');
+  if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
+
+  toastr.querySelector('.mdc-snackbar__label').textContent = message;
+  toast.timeoutMs = 10000;
+  toast.open();
+};
 
 const specsListItemTPL = specs => html`
   ${specs.map(
@@ -253,6 +271,15 @@ const saveTest = d => {
       ASSESSMENTS.doc(key).update({ publicKey });
 
       return ASSESSMENTS.doc(key);
+    })
+    .then(() => {
+      // TODO notify user
+      notify('Test Saved Successfully');
+    })
+    .then(() => {
+      setTimeout(() => {
+        goTo('!#assessments');
+      }, 2000)
     })
     .then(doc => doc.get());
 };

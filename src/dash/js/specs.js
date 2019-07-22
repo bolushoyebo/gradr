@@ -15,6 +15,7 @@ import {
   exceptId
 } from '../../commons/js/utils.js';
 
+let toast;
 let spec = {};
 let builtUI = false;
 let starterEditor;
@@ -36,17 +37,37 @@ const deleteDialogComponent = select(`[data-action='delete-dialog']`);
 const cancelDeleteBtn = select(`[data-mdc-dialog-action='close']`);
 const deleteDialogScrim = select('.mdc-dialog__scrim');
 
+const notify = (msg) => {
+  let message = trim(msg);
+  if (message === '') return;
+
+  if(message === 'ERROR') {
+    message = `Ooops something went wrong!`;
+  }
+
+  const toastr = select('#intro-toast');
+  if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
+
+  toastr.querySelector('.mdc-snackbar__label').textContent = message;
+  toast.timeoutMs = 10000;
+  toast.open();
+};
 const deleteSpec = () => {
   if (!spec || !spec.id) return;
   SPECS.doc(spec.id)
     .delete()
     .then(() => {
       // TODO notify user
-      window.location.pathname = '!#specs';
+      notify('Spec Deleted Successfully');
+    })
+    .then(() => {
+      setTimeout(() => {
+        goTo('!#specs');
+      }, 2000)
     })
     .catch(error => {
       // TODO notify user
-      console.warn('Error deleting spec: ', error.message);
+      notify('Error deleting spec: ', error.message);
     });
 };
 
@@ -182,6 +203,15 @@ const saveSpec = async details => {
     createAt: Date.now()
   })
     .then(ref => SPECS.doc(ref.id))
+    .then(() => {
+      // TODO notify user
+      notify('Spec Saved Successfully');
+    })
+    .then(() => {
+      setTimeout(() => {
+        goTo('!#specs');
+      }, 2000)
+    })
     .then(doc => doc.get());
 
   const specWithUpdatedSlug = await checkIfSlugIsUnique(
