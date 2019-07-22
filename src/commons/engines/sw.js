@@ -1,4 +1,4 @@
-const swVersion = 1.2;
+const swVersion = 1.3;
 const appName = 'gradr';
 const appCache = `${appName}-static-v${swVersion}`;
 const allCaches = [appCache];
@@ -7,15 +7,8 @@ let gradrClient;
 const staticAssets = [
   '/',
   'index.html',
-  'favicon.8747d0eb.png',
-  'apps.0a697ba6.svg',
-  'phone-chrome.40401697.png',
-  'main.ce2de5da.css',
-  'fb-init.77e6c068.js',
-  'GARelay.71bce292.js',
-  'js.8803359f.js',
-  'playground.3ef86f5f.js',
-  'dist.f61e6673.js',
+  'https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css',
+  'https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js'
 ];
 
 self.addEventListener('install', event => {

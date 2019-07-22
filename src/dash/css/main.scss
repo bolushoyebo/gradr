@@ -1,5 +1,5 @@
-
-html, body{
+html,
+body {
   height: 100%;
 }
 
@@ -45,7 +45,7 @@ body [data-view].active {
   opacity: 1;
 }
 
-body[data-nav=home] {
+body[data-nav='home'] {
   background: url(../../commons/images/apps.svg) 100% 0 no-repeat;
 }
 
@@ -82,21 +82,21 @@ header.mdc-top-app-bar--fixed [data-action]:hover path.shape {
 }
 
 /* Specs */
-[data-view=create-edit-spec] {
+[data-view='create-edit-spec'] {
   width: 95%;
   margin: 3em auto;
   background: #fff;
 }
 
-[data-view=create-edit-spec] .details-wrap {
+[data-view='create-edit-spec'] .details-wrap {
   padding: 1em 1em 1em 1em;
 }
 
-[data-view=create-edit-spec] .details-wrap p {
+[data-view='create-edit-spec'] .details-wrap p {
   margin: 0;
 }
 
-[data-view=create-edit-spec] .mdc-typography--headline5 .mdc-icon-button {
+[data-view='create-edit-spec'] .mdc-typography--headline5 .mdc-icon-button {
   margin-top: -0.3em;
   margin-right: 0.3em;
 }
@@ -120,7 +120,7 @@ header.mdc-top-app-bar--fixed [data-action]:hover path.shape {
   transition: opacity 0.5s ease-in;
 }
 
-[data-details-item=active] {
+[data-details-item='active'] {
   opacity: 1;
   display: block;
 }
@@ -129,16 +129,16 @@ header.mdc-top-app-bar--fixed [data-action]:hover path.shape {
   min-height: 415px;
 }
 
-[data-view=create-edit-spec] #toggle-viewer {
+[data-view='create-edit-spec'] #toggle-viewer {
   margin-bottom: 0.5em;
 }
 
-[data-view=create-edit-spec] [data-preview] {
+[data-view='create-edit-spec'] [data-preview] {
   min-height: 455px;
   max-height: 555px;
 }
 
-[data-view=create-edit-spec] [data-preview] .content {
+[data-view='create-edit-spec'] [data-preview] .content {
   margin-left: 0.7em;
   overflow: auto;
   max-height: 500px;
@@ -146,7 +146,7 @@ header.mdc-top-app-bar--fixed [data-action]:hover path.shape {
 
 @import '../../commons/css/guide.scss';
 
-body[data-nav=specs] .mdc-card.text-only .mdc-card__primary-action {
+body[data-nav='specs'] .mdc-card.text-only .mdc-card__primary-action {
   padding: 1rem;
   min-height: 157px;
 }
@@ -155,7 +155,7 @@ body[data-nav=specs] .mdc-card.text-only .mdc-card__primary-action {
   max-width: 65%;
 }
 
-[data-action=clone-spec] {
+[data-action='clone-spec'] {
   margin-top: -6px;
   margin-right: 10px;
 }
@@ -172,44 +172,44 @@ body[data-nav=specs] .mdc-card.text-only .mdc-card__primary-action {
   position: absolute;
 }
 
-body[data-nav=assessments] .mdc-card.text-only .mdc-card__primary-action {
+body[data-nav='assessments'] .mdc-card.text-only .mdc-card__primary-action {
   padding: 1rem;
 }
 
-body[data-nav=assessments] .mdc-card.text-only:hover {
+body[data-nav='assessments'] .mdc-card.text-only:hover {
   background: #f6f6f6;
 }
 
-[data-view=create-edit-test] {
+[data-view='create-edit-test'] {
   width: 95%;
   margin: 3em auto;
   background: #fff;
 }
 
-[data-action=extract-test-id] {
+[data-action='extract-test-id'] {
   margin-top: -0.2em;
   margin-right: 0.5em;
 }
 
-[data-view=create-edit-test] #from-date-field,
-[data-view=create-edit-test] #to-date-field {
+[data-view='create-edit-test'] #from-date-field,
+[data-view='create-edit-test'] #to-date-field {
   margin: 0.8em 0;
 }
 
-[type=datetime-local] {
+[type='datetime-local'] {
   background: #fff;
 }
 
-[data-view=create-edit-test] .details-wrap {
+[data-view='create-edit-test'] .details-wrap {
   padding: 1.8em;
 }
 
-[data-view=create-edit-test] .mdc-select {
+[data-view='create-edit-test'] .mdc-select {
   margin: 1.5em 0;
   width: 90%;
 }
 
-[data-view=create-edit-test] #testname-field {
+[data-view='create-edit-test'] #testname-field {
   min-width: 65%;
 }
 
@@ -221,7 +221,8 @@ body[data-nav=assessments] .mdc-card.text-only:hover {
   display: none;
 }
 
-[data-view='create-edit-test'][data-test-hasentries] [data-assessment-hasentries] {
+[data-view='create-edit-test'][data-test-hasentries]
+  [data-assessment-hasentries] {
   display: block;
 }
 
@@ -237,7 +238,8 @@ body[data-nav=assessments] .mdc-card.text-only:hover {
 }
 
 [data-assessment-admin] input.email-search-input {
-  background: #fff url('../images/baseline-search-24px.svg') center right no-repeat;
+  background: #fff url('../images/baseline-search-24px.svg') center right
+    no-repeat;
 }
 
 [data-assessment-admin] button[data-export] {
@@ -276,30 +278,29 @@ body[data-nav=assessments] .mdc-card.text-only:hover {
   padding-left: 0.8em;
 }
 
-[data-assessment-admin] table tbody{
-   overflow: auto;
-   height: 100px;
+[data-assessment-admin] table tbody {
+  overflow: auto;
+  height: 100px;
 }
 
 .align-center {
   text-align: center !important;
 }
 
-
-.email-search{
+.email-search {
   width: 363px !important;
   margin-top: 23px !important;
   margin-left: 172px;
 }
 
-.search-icon{
+.search-icon {
   width: 30px;
   padding-top: 13px;
   padding-left: -20px;
   margin-left: -40px;
 }
-.spec-card{
-  height: 100%
+.spec-card {
+  height: 100%;
 }
 
 /* End Assesstemts */

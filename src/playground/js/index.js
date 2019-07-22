@@ -201,8 +201,8 @@ const takeOff = async () => {
     setupAuthentication();
 
     if(navigator.serviceWorker) {
-      const swName = `/sw.js`;
-      navigator.serviceWorker.register(swName);
+      const swURL = `${window.location.origin}/sw.js`;
+      navigator.serviceWorker.register(swURL);
     }
   }
 };

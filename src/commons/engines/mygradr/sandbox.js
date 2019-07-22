@@ -23,11 +23,13 @@ const executeScript = code =>
       ast = gradrInstrumentation(ast);
     }
     
-    for (let node of ast.body) {
+    ast.body = ast.body.map(n => {
+      const node = n;
       if (node.type === 'VariableDeclaration') {
         node.kind = 'var';
       }
-    }
+      return node;
+    });
 
     const codeToRun = escodegen.generate(ast);
     const script = document.body.querySelector('#codesink');
@@ -47,7 +49,7 @@ const executeStyle = code =>
     const styles = document.head.querySelector('#styles');
 
     csstree.parse(code, {
-      onParseError: (error) => {
+      onParseError: () => {
         reject(Error('Awwww Snaaap :( your CSS code has one or more syntax errors ...'));
       }
     });
@@ -96,11 +98,11 @@ const installAutoGrader = event =>
     if (specId) return resolve();
 
     specId = event.data.spec;
-    const autoGradrURL = `${window.location.origin}/engines/${specId}.js`;
+    const autoGradrURL = `${window.location.origin}/mygradr/${specId}.js`;
 
     // check if auto-grading script exists
     // else, throw an error in the parse attempt
-    fetch(autoGradrURL)
+    return fetch(autoGradrURL)
       .then(response => response.text())
       .then(code => {
         esprima.parseScript(code);
@@ -117,9 +119,9 @@ const installAutoGrader = event =>
             type: 'ping'
           });
         }
-
+        return resolve();
       })
-      .catch(error => {
+      .catch(() => {
         reject(new Error(noAutoGradrErrorMsg));
       });
   });
