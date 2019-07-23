@@ -259,7 +259,7 @@ const authorStarter = async () => {
   switchDetailsTo(`data-manage-challenge-starter`);
   let code = spec.starterCodebase;
   if (!code) {
-    code = await import('../../commons/tpl/start.html');
+    code = await import('../../commons/engines/mygradr/tpl/start.html');
   }
   starterEditor.setValue(code);
 };
