@@ -32,11 +32,19 @@ let batchedProgress = [];
 let assessmentProgress = {};
 let savingBatchedProgress = false;
 
+let lastSavedCode;
+
 const SPECS = firebase.firestore().collection('specs');
 const SUBMISSIONS = firebase.firestore().collection('submissions');
 
 const challengeInfo = select('[data-challenge-info]');
 const testOverMsg = 'This assessment is closed. Your changes will not be saved or evaluated';
+
+const thePlayground = select('#main-container');
+const saveCodeDialogComponent = select(`[data-action='save-code-dialog']`);
+const saveCodeConfirmBtn = select(`[data-mdc-dialog-action='save-code']`);
+const cancelSaveBtn = select(`[data-mdc-dialog-action='close']`);
+const saveCodeDialogScrim = select('#save-code-scrim');
 
 const notify = (msg) => {
   let message = trim(msg);
@@ -325,7 +333,7 @@ const progressTo = async (challengeIndex) => {
 };
 
 const getCode = () => {
-  let codebase = editor.getValue();
+  let codebase = editor && editor.getValue();
   if (!codebase) {
     const { code } = JSON.parse(localStorage.getItem('work'));
     codebase = code;
@@ -406,6 +414,7 @@ const playCode = () => {
     },
     window.location.origin
   );
+  lastSavedCode = code;
 };
 
 const handleChallengeNavClicks = (event) => {
@@ -575,6 +584,64 @@ const handleSandboxMessages = async (event) => {
   switchPreviewToEmulator();
 };
 
+/**
+ * @description Saves the codes from the editor
+ */
+const saveCode = () => {
+  const code = getCode();
+  if (!code) return;
+
+  notify('Saving Your Code ...');
+
+  const payload = extractCode(code);
+  sandboxWindow.postMessage(
+    {
+      payload,
+      spec: spec.id,
+      assessment: testId
+    },
+    window.location.origin
+  );
+  saveWork({
+    challengeIndex: assessmentProgress.challengeIndex,
+    completedChallenge: assessmentProgress.completedChallenge
+  });
+  lastSavedCode = code;
+  saveCodeDialogComponent.classList.remove('mdc-dialog--open');
+};
+
+/**
+ * @description checks whether the user has made changes to the code.
+ */
+const codeChanges = () => {
+  const currentCode = getCode();
+  return lastSavedCode !== currentCode;
+};
+
+/**
+ * @description closes the save dialog and remove event listeners
+ */
+const closeSaveCodeDialog = () => {
+  saveCodeDialogComponent.classList.remove('mdc-dialog--open');
+  cancelSaveBtn.removeEventListener('click', closeSaveCodeDialog);
+  saveCodeDialogScrim.removeEventListener('click', closeSaveCodeDialog);
+  saveCodeConfirmBtn.removeEventListener('click', saveCode);
+};
+
+/**
+ * @description opens the save dialog and add event listeners
+ */
+const openSaveCodeDialog = () => {
+  if(codeChanges()){
+    saveCodeDialogComponent.classList.add('mdc-dialog--open');
+    saveCodeDialogComponent.classList.add('mdc-dialog--open');
+    cancelSaveBtn.addEventListener('click', closeSaveCodeDialog);
+    saveCodeDialogScrim.addEventListener('click', closeSaveCodeDialog);
+    saveCodeConfirmBtn.addEventListener('click', saveCode);
+  }
+};
+
+
 const handleSpecialKeyCombinations = () => {
   document.addEventListener('keyup', event => {
     const key = event.which || event.keyCode;
@@ -601,6 +668,7 @@ const proceed = async (project) => {
   device = viewer;
   editor = codeEditor;
   editor.setValue(code);
+  lastSavedCode = code;
 
   editor.on("beforeChange", (_, change) => {
     if (change.origin === 'paste') change.cancel();
@@ -660,6 +728,7 @@ const deferredEnter = async (args) => {
   await getAssessmentSpec();
   const project = await createOrUpdateProject();
   proceed(project.data());
+  thePlayground.addEventListener('mouseleave', openSaveCodeDialog);
 };
 
 export const enter = async (args = {}) => {

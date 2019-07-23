@@ -28,7 +28,7 @@
   <script defer src="https://www.googletagmanager.com/gtag/js?id=UA-143248811-1"></script>
 </head>
 
-<body class="mdc-typography">
+<body class="mdc-typography" id="main-container">
   <header class="mdc-top-app-bar mdc-top-app-bar--short mdc-top-app-bar--short-collapsed">
     <div class="mdc-top-app-bar__row">
       <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
@@ -72,6 +72,31 @@
   </div>
 
   <main class="mdc-top-app-bar--fixed-adjust">
+    <div class="mdc-dialog" data-action="save-code-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="my-dialog-title"
+      aria-describedby="my-dialog-content">
+      <div class="mdc-dialog__container">
+        <div class="mdc-dialog__surface">
+          <h2 class="mdc-dialog__title" id="my-dialog-title">
+            Save Your Progress
+          </h2>
+          <div class="mdc-dialog__content" id="my-dialog-content">
+            Click the "Save Progress" button to save your progress in this challenge
+          </div>
+          <footer class="mdc-dialog__actions">
+            <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
+              <span class="mdc-button__label">Cancel</span>
+            </button>
+            <button type="button" class="mdc-button mdc-dialog__button mdc-ripple-upgraded mdc-ripple-upgraded--background-focused" data-mdc-dialog-action="save-code">
+              <span class="mdc-button__label">Save Progress</span>
+            </button>
+          </footer>
+        </div>
+      </div>
+      <div class="mdc-dialog__scrim" id="save-code-scrim"></div>
+    </div>
     <div data-view="home">
       <div class="mdc-layout-grid">
         <div class="mdc-layout-grid__inner">
