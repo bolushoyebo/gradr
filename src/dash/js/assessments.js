@@ -38,18 +38,10 @@ const extractTestIDBtn = select(`[data-action='extract-test-id']`);
 
 
 const notify = (msg) => {
-  let message = trim(msg);
-  if (message === '') return;
-
-  if(message === 'ERROR') {
-    message = `Ooops something went wrong!`;
-  }
-
-  const toastr = select('#intro-toast');
+  const message = trim(msg);
+  const toastr = select('#toast');
   if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
-
   toastr.querySelector('.mdc-snackbar__label').textContent = message;
-  toast.timeoutMs = 10000;
   toast.open();
 };
 
@@ -273,12 +265,11 @@ const saveTest = d => {
       return ASSESSMENTS.doc(key);
     })
     .then(() => {
-      // TODO notify user
-      notify('Test Saved Successfully');
+      notify('Assessment Saved Successfully');
     })
     .then(() => {
       setTimeout(() => {
-        goTo('!#assessments');
+        window.location.pathname = '!#assessments';
       }, 2000)
     })
     .then(doc => doc.get());

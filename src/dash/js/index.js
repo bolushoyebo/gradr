@@ -1,6 +1,6 @@
 import firebase from 'firebase/app';
 
-import { trim, select, goTo, handleWindowPopState } from '../../commons/js/utils.js';
+import { select, goTo, handleWindowPopState } from '../../commons/js/utils.js';
 
 import {
   importDash,
@@ -8,13 +8,6 @@ import {
 } from './module-manager.js';
 
 let provider;
-let toast;
-const notify = msg => {
-  if (!toast || trim(msg) === '') return;
-
-  select('#intro-toast .mdc-snackbar__label').textContent = msg;
-  toast.open();
-};
 
 const signIn = () => {
   if (!provider) return;
@@ -38,9 +31,7 @@ const setupSignIn = () => {
 const takeOff = () => {
   
   handleWindowPopState();
-  toast = mdc.snackbar.MDCSnackbar.attachTo(select('#intro-toast'));
   importFirebaseInitializer().then(fbInitializer => {
-    notify('Busy, loading admin dashboard resources  ...');
     fbInitializer.init();
 
     // TODO switch to email/password  provider

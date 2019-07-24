@@ -38,18 +38,10 @@ const cancelDeleteBtn = select(`[data-mdc-dialog-action='close']`);
 const deleteDialogScrim = select('.mdc-dialog__scrim');
 
 const notify = (msg) => {
-  let message = trim(msg);
-  if (message === '') return;
-
-  if(message === 'ERROR') {
-    message = `Ooops something went wrong!`;
-  }
-
-  const toastr = select('#intro-toast');
+  const message = trim(msg);
+  const toastr = select('#toast');
   if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
-
   toastr.querySelector('.mdc-snackbar__label').textContent = message;
-  toast.timeoutMs = 10000;
   toast.open();
 };
 const deleteSpec = () => {
@@ -57,16 +49,14 @@ const deleteSpec = () => {
   SPECS.doc(spec.id)
     .delete()
     .then(() => {
-      // TODO notify user
       notify('Spec Deleted Successfully');
     })
     .then(() => {
       setTimeout(() => {
-        goTo('!#specs');
+        window.location.pathname = '!#specs';
       }, 2000)
     })
     .catch(error => {
-      // TODO notify user
       notify('Error deleting spec: ', error.message);
     });
 };
@@ -204,12 +194,11 @@ const saveSpec = async details => {
   })
     .then(ref => SPECS.doc(ref.id))
     .then(() => {
-      // TODO notify user
       notify('Spec Saved Successfully');
     })
     .then(() => {
       setTimeout(() => {
-        goTo('!#specs');
+        window.location.pathname = '!#specs';
       }, 2000)
     })
     .then(doc => doc.get());
