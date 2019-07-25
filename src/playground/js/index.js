@@ -1,4 +1,5 @@
 import * as firebase from 'firebase/app';
+import getServerTime from '../../commons/js/getServerTime';
 
 import {
   trim,
@@ -167,6 +168,10 @@ const setupAuthentication = () => {
 };
 
 const takeOff = async () => {
+  // set the serverTime after every 30 seconds
+  global.serverTime = await getServerTime()
+  setTimeout(async() => { global.serverTime = await getServerTime()}, 30000);
+
   importGARelay().then(module => {
     GARelay = module.default;
   });
