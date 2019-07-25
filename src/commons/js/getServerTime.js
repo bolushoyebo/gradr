@@ -8,7 +8,8 @@ const getServerTime = async () => {
         const response = await fetch(process.env.firebaseURL);
         const { time } = await response.json();
         return time;
-    } catch (error) {
+    }
+    catch(error){
         console.warn(error);
         return undefined;
     }
