@@ -40,12 +40,6 @@ const SUBMISSIONS = firebase.firestore().collection('submissions');
 const challengeInfo = select('[data-challenge-info]');
 const testOverMsg = 'This assessment is closed. Your changes will not be saved or evaluated';
 
-const thePlayground = select('#main-container');
-const saveCodeDialogComponent = select(`[data-action='save-code-dialog']`);
-const saveCodeConfirmBtn = select(`[data-mdc-dialog-action='save-code']`);
-const cancelSaveBtn = select(`[data-mdc-dialog-action='close']`);
-const saveCodeDialogScrim = select('#save-code-scrim');
-
 const notify = (msg) => {
   let message = trim(msg);
   if (message === '') return;
@@ -439,6 +433,19 @@ const handleChallengeNavClicks = (event) => {
   }
 };
 
+/**
+ * @description fetches the users work and sets
+ * the value of the assessmentProgress variable
+ */
+const setAssessmentProgress = async () => {
+  const existingWork = await SUBMISSIONS.doc(projectId).get();
+  const data = existingWork.data();
+  assessmentProgress = {...assessmentProgress, ...{
+    challengeIndex: data.challengeIndex,
+    completedChallenge: data.completedChallenge 
+  }};
+}
+
 const setTheStage = async (challengeIndex, started) => {
   localStorage.setItem('challengeIndex', challengeIndex);
   notify('building your playground ...');
@@ -511,6 +518,9 @@ const setTheStage = async (challengeIndex, started) => {
       Enter: 'emmetInsertLineBreak'
     }
   });
+
+  document.body.addEventListener('mouseleave', saveCode);
+  window.addEventListener('beforeunload', saveCode);
 
   notify('DONE!');
   return { codeEditor, sandbox, viewer };
@@ -585,32 +595,6 @@ const handleSandboxMessages = async (event) => {
 };
 
 /**
- * @description Saves the codes from the editor
- */
-const saveCode = () => {
-  const code = getCode();
-  if (!code) return;
-
-  notify('Saving Your Code ...');
-
-  const payload = extractCode(code);
-  sandboxWindow.postMessage(
-    {
-      payload,
-      spec: spec.id,
-      assessment: testId
-    },
-    window.location.origin
-  );
-  saveWork({
-    challengeIndex: assessmentProgress.challengeIndex,
-    completedChallenge: assessmentProgress.completedChallenge
-  });
-  lastSavedCode = code;
-  saveCodeDialogComponent.classList.remove('mdc-dialog--open');
-};
-
-/**
  * @description checks whether the user has made changes to the code.
  */
 const codeChanges = () => {
@@ -619,28 +603,22 @@ const codeChanges = () => {
 };
 
 /**
- * @description closes the save dialog and remove event listeners
+ * @description Saves the codes from the editor
  */
-const closeSaveCodeDialog = () => {
-  saveCodeDialogComponent.classList.remove('mdc-dialog--open');
-  cancelSaveBtn.removeEventListener('click', closeSaveCodeDialog);
-  saveCodeDialogScrim.removeEventListener('click', closeSaveCodeDialog);
-  saveCodeConfirmBtn.removeEventListener('click', saveCode);
-};
-
-/**
- * @description opens the save dialog and add event listeners
- */
-const openSaveCodeDialog = () => {
+const saveCode = () => {
   if(codeChanges()){
-    saveCodeDialogComponent.classList.add('mdc-dialog--open');
-    saveCodeDialogComponent.classList.add('mdc-dialog--open');
-    cancelSaveBtn.addEventListener('click', closeSaveCodeDialog);
-    saveCodeDialogScrim.addEventListener('click', closeSaveCodeDialog);
-    saveCodeConfirmBtn.addEventListener('click', saveCode);
+    const code = getCode();
+    if (!code) return;
+
+    notify('Saving Your Code...');
+    saveWork({
+      challengeIndex: assessmentProgress.challengeIndex,
+      completedChallenge: assessmentProgress.completedChallenge
+    });
+    lastSavedCode = code;
+    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
   }
 };
-
 
 const handleSpecialKeyCombinations = () => {
   document.addEventListener('keyup', event => {
@@ -686,12 +664,7 @@ const proceed = async (project) => {
   
   if (whereAmI >= 0) {
     await progressTo(whereAmI);
-    const existingWork = await SUBMISSIONS.doc(projectId).get();
-    const data = existingWork.data();
-    assessmentProgress = {...assessmentProgress, ...{
-      challengeIndex: data.challengeIndex,
-      completedChallenge: data.completedChallenge 
-    }};
+    await setAssessmentProgress();
 
     const { endingAt } = assessment;
     if (isWithinDeadline({ endingAt })) {
@@ -705,7 +678,6 @@ const proceed = async (project) => {
     }
     playCode();
   }
-
 };
 
 const deferredEnter = async (args) => {
@@ -728,12 +700,11 @@ const deferredEnter = async (args) => {
   await getAssessmentSpec();
   const project = await createOrUpdateProject();
   proceed(project.data());
-  thePlayground.addEventListener('mouseleave', openSaveCodeDialog);
 };
 
 export const enter = async (args = {}) => {
   notify('Building your playground, please wait ...');
-  deferredEnter(args); 
+  deferredEnter(args);
 };
 export default { enter };
 
