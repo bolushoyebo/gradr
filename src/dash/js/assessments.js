@@ -17,6 +17,8 @@ import {
   selectAll
 } from '../../commons/js/utils.js';
 
+import {notify} from './utils.js';
+
 let chart;
 let builtUI = false;
 let assessment = {};
@@ -287,15 +289,27 @@ const canSaveTest = () => {
 };
 
 const saveTest = d => {
-  const { id } = d;
+  const { id, name } = d;
   const details = { ...d, ...{ slug: toSlug(`${d.name}-${d.cycle}`) } };
+
+  const testGotSaved = () => {
+    notify(`Saved ${name} Successfully`);
+    rAF({wait:1000}).then(() => {
+      window.location.pathname = '!#assessments';
+    });
+  };
+
+  notify(`Saving ${name} ...`);
 
   if (id) {
     const changes = exceptId(details);
     return ASSESSMENTS.doc(id)
       .update(changes)
       .then(() => ASSESSMENTS.doc(id))
-      .then(doc => doc.get());
+      .then(doc => {
+        testGotSaved();
+        return doc.get();
+      });
   }
 
   return ASSESSMENTS.add({
@@ -310,11 +324,11 @@ const saveTest = d => {
         .reverse()
         .join('');
 
-      ASSESSMENTS.doc(key).update({ publicKey });
-
-      return ASSESSMENTS.doc(key);
-    })
-    .then(doc => doc.get());
+      return ASSESSMENTS.doc(key).update({ publicKey }).then(() => {
+        testGotSaved();
+        return ASSESSMENTS.doc(key).get();
+      });
+    });
 };
 
 const fieldValueChanged = event => {
@@ -722,6 +736,7 @@ const manageATest = event => {
   const id = itemEl.getAttribute('data-key');
   if (!id) return;
 
+  notify('Loading assessment');
   buildUI({ mode: 'manage' });
   clearInputValues();
 
@@ -749,16 +764,6 @@ const manageATest = event => {
       });
 
       attemptDisplayAssessmentAdminUI();
-
-      // query('submissions', [
-      //   'email == chaluwa@gmail.com',
-      //   `assessment == ${assessment.publicKey}`
-      // ]).then(snap => {
-      //   snap.forEach(s => console.log(s.data()));
-      //   SUBMISSIONS.doc( snap.docs[0].id ).delete().then(() => {
-      //     console.log('deleted chaluwa');
-      //   });
-      // });
     });
 
   goTo('create-edit-test', { id }, '!#create-edit-test');
@@ -789,6 +794,7 @@ const testsListItemTPL = specs => html`
 `;
 
 export const adminWillViewTests = () => {
+  notify('Fetching assessments');
   ASSESSMENTS.get()
     .then(snapshot => {
       const tests = [];
