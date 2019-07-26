@@ -240,8 +240,17 @@ const safelyIncrementChallengeIndex = (challengeLength, challengeIndex) => {
 const navigateToChallengeInstructions = async (challengeIndex) => {
   const intructions = await setupInstructions(challengeIndex);
   if(challengeInfo) {
+    const renderer = new marked.Renderer();
+    renderer.link = (href, title, text) => {
+      const normalisedTitle = title === null ? 'external resource' : title;
+      let target = '';
+      if(/http|www/.test(href)) target = `target="_blank"`;
+      return `<a href="${href}" title="${normalisedTitle}" ${target}>${text}</a>`;
+    }
+
     challengeInfo.innerHTML = marked(intructions, {
       gfm: true,
+      renderer,
       smartLists: true
     });
   }
