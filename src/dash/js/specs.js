@@ -15,7 +15,8 @@ import {
   exceptId
 } from '../../commons/js/utils.js';
 
-let toast;
+import {notify} from './utils.js';
+
 let spec = {};
 let builtUI = false;
 let starterEditor;
@@ -37,24 +38,16 @@ const deleteDialogComponent = select(`[data-action='delete-dialog']`);
 const cancelDeleteBtn = select(`[data-mdc-dialog-action='close']`);
 const deleteDialogScrim = select('.mdc-dialog__scrim');
 
-const notify = (msg) => {
-  const message = trim(msg);
-  const toastr = select('#toast');
-  if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
-  toastr.querySelector('.mdc-snackbar__label').textContent = message;
-  toast.open();
-};
 const deleteSpec = () => {
   if (!spec || !spec.id) return;
+  notify(`Deleting ${spec.name} ...`);
   SPECS.doc(spec.id)
     .delete()
     .then(() => {
-      notify('Spec Deleted Successfully');
-    })
-    .then(() => {
-      setTimeout(() => {
+      notify(`Deleted ${spec.name} Successfully`);
+      rAF({wait:1000}).then(() => {
         window.location.pathname = '!#specs';
-      }, 2000)
+      });
     })
     .catch(error => {
       notify('Error deleting spec: ', error.message);
@@ -177,13 +170,25 @@ const clearInputValues = () => {
 };
 
 const saveSpec = async details => {
-  const { id } = details;
+  const { id, name } = details;
+
+  const specGotSaved = () => {
+    notify(`Saved ${name} Successfully`);
+    rAF({wait:1000}).then(() => {
+      window.location.pathname = '!#specs';
+    });
+  };
+  notify(`Saving ${name} ...`);
+
   if (id) {
     const changes = exceptId(details);
     return SPECS.doc(id)
       .update(changes)
       .then(() => SPECS.doc(id))
-      .then(doc => doc.get());
+      .then(doc => {
+        specGotSaved();
+        return doc.get();
+      });
   }
 
   let newSpec = await SPECS.add({
@@ -193,15 +198,10 @@ const saveSpec = async details => {
     createAt: Date.now()
   })
     .then(ref => SPECS.doc(ref.id))
-    .then(() => {
-      notify('Spec Saved Successfully');
+    .then(doc => {
+      specGotSaved();
+      return doc.get();
     })
-    .then(() => {
-      setTimeout(() => {
-        window.location.pathname = '!#specs';
-      }, 2000)
-    })
-    .then(doc => doc.get());
 
   const specWithUpdatedSlug = await checkIfSlugIsUnique(
     details.slug, newSpec.id);
@@ -216,6 +216,7 @@ const cloneASpec = async () => {
   const clonedSpecName = `${name} Copy`;
 
   if (extriesAreValid(clonedSpec)) {
+    notify(`Cloning ${name} ...`);
     const doc = await saveSpec({
       ...clonedSpec,
       name: clonedSpecName,
@@ -467,6 +468,7 @@ const manageASpec = event => {
   const id = itemEl.getAttribute('data-key');
   if (!id) return;
 
+  notify('Loading Spec');
   SPECS.doc(id)
     .get()
     .then(doc => {
@@ -519,6 +521,7 @@ const specsListItemTPL = specs => html`
   `
 
 export const adminWillViewSpecs = () => {
+  notify('Fetching Specs');
   SPECS.where('status', '==', 'active')
     .get()
     .then(snapshot => {

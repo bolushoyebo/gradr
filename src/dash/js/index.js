@@ -3,9 +3,10 @@ import firebase from 'firebase/app';
 import { select, goTo, handleWindowPopState } from '../../commons/js/utils.js';
 
 import {
-  importDash,
   importFirebaseInitializer
 } from './module-manager.js';
+
+const importDash = () => import('./dashboard.js');
 
 let provider;
 

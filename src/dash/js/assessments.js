@@ -17,7 +17,8 @@ import {
   selectAll
 } from '../../commons/js/utils.js';
 
-let toast;
+import {notify} from './utils.js';
+
 let chart;
 let builtUI = false;
 let assessment = {};
@@ -35,15 +36,6 @@ const SUBMISSIONS = firebase.firestore().collection('submissions');
 const testsListEl = select('#tests-list');
 const saveTestBtn = select(`[data-action='save-test']`);
 const extractTestIDBtn = select(`[data-action='extract-test-id']`);
-
-
-const notify = (msg) => {
-  const message = trim(msg);
-  const toastr = select('#toast');
-  if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
-  toastr.querySelector('.mdc-snackbar__label').textContent = message;
-  toast.open();
-};
 
 const specsListItemTPL = specs => html`
   ${specs.map(
@@ -237,15 +229,27 @@ const canSaveTest = () => {
 };
 
 const saveTest = d => {
-  const { id } = d;
+  const { id, name } = d;
   const details = { ...d, ...{ slug: toSlug(`${d.name}-${d.cycle}`) } };
+
+  const testGotSaved = () => {
+    notify(`Saved ${name} Successfully`);
+    rAF({wait:1000}).then(() => {
+      window.location.pathname = '!#assessments';
+    });
+  };
+
+  notify(`Saving ${name} ...`);
 
   if (id) {
     const changes = exceptId(details);
     return ASSESSMENTS.doc(id)
       .update(changes)
       .then(() => ASSESSMENTS.doc(id))
-      .then(doc => doc.get());
+      .then(doc => {
+        testGotSaved();
+        return doc.get();
+      });
   }
 
   return ASSESSMENTS.add({
@@ -260,19 +264,11 @@ const saveTest = d => {
         .reverse()
         .join('');
 
-      ASSESSMENTS.doc(key).update({ publicKey });
-
-      return ASSESSMENTS.doc(key);
-    })
-    .then(() => {
-      notify('Assessment Saved Successfully');
-    })
-    .then(() => {
-      setTimeout(() => {
-        window.location.pathname = '!#assessments';
-      }, 2000)
-    })
-    .then(doc => doc.get());
+      return ASSESSMENTS.doc(key).update({ publicKey }).then(() => {
+        testGotSaved();
+        return ASSESSMENTS.doc(key).get();
+      });
+    });
 };
 
 const fieldValueChanged = event => {
@@ -678,6 +674,7 @@ const manageATest = event => {
   const id = itemEl.getAttribute('data-key');
   if (!id) return;
 
+  notify('Loading assessment');
   buildUI({ mode: 'manage' });
   clearInputValues();
 
@@ -705,16 +702,6 @@ const manageATest = event => {
       });
 
       attemptDisplayAssessmentAdminUI();
-
-      // query('submissions', [
-      //   'email == chaluwa@gmail.com',
-      //   `assessment == ${assessment.publicKey}`
-      // ]).then(snap => {
-      //   snap.forEach(s => console.log(s.data()));
-      //   SUBMISSIONS.doc( snap.docs[0].id ).delete().then(() => {
-      //     console.log('deleted chaluwa');
-      //   });
-      // });
     });
 
   goTo('create-edit-test', { id }, '!#create-edit-test');
@@ -745,6 +732,7 @@ const testsListItemTPL = specs => html`
 `;
 
 export const adminWillViewTests = () => {
+  notify('Fetching assessments');
   ASSESSMENTS.get()
     .then(snapshot => {
       const tests = [];
