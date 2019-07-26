@@ -34,6 +34,54 @@ const SUBMISSIONS = firebase.firestore().collection('submissions');
 const testsListEl = select('#tests-list');
 const saveTestBtn = select(`[data-action='save-test']`);
 const extractTestIDBtn = select(`[data-action='extract-test-id']`);
+const deleteTestIcon = select(`[data-action='delete-test']`); // The delete icon button
+const deleteConfirmBtn = select('#delete-test-confirm'); // The delete confirm button
+const deleteDialogComponent = select('#delete-test-dialog'); // The delete dialog component
+const cancelDeleteBtn = select('#delete-test-cancel');
+const deleteDialogScrim = select('#delete-test-scrim'); // The dialog/modal's transparent background 
+
+/**
+ * @description Handles the delete confirmation click and sends
+ * the delete assessment request to firebase.firestore
+ */
+const deleteAssessment = () => {
+  if (!assessment || !assessment.id) return;
+
+  ASSESSMENTS.doc(assessment.id)
+    .delete().then(() => {
+    // TODO notify user
+    console.log('Assessment successfully deleted!');
+    window.location.pathname = '!#assessments';
+  }).catch((error) => {
+    // TODO notify user
+    console.error('Error removing assessment: ', error);
+  });
+}
+
+/**
+ * @description handles the closing of the dialog/modal
+ * removes the varios event listeners
+ */
+const closeDeleteDialog = () => {
+  deleteDialogComponent.classList.remove('mdc-dialog--open');
+
+  cancelDeleteBtn.removeEventListener('click', closeDeleteDialog);
+  deleteDialogScrim.removeEventListener('click', closeDeleteDialog);
+  deleteConfirmBtn.removeEventListener('click', deleteAssessment);
+}
+
+/**
+ * @description handles the opening of the delete dialog/modal
+ * adds various event listeners to the modal elements
+ */
+const openDeleteDialog = () => {
+  if (!assessment || !assessment.id) return;
+  deleteDialogComponent.classList.add('mdc-dialog--open');
+
+  cancelDeleteBtn.addEventListener('click', closeDeleteDialog);
+  deleteDialogScrim.addEventListener('click', closeDeleteDialog);
+  deleteConfirmBtn.addEventListener('click', deleteAssessment);
+}
 
 const specsListItemTPL = specs => html`
   ${specs.map(
@@ -91,13 +139,22 @@ const droppedOutOrCompletedNone = theAssessment => {
   }
 };
 
+/**
+ * @description sets the value of "assessment" global variable
+ * 
+ * @param { object } obj 
+ */
 const setAssessmentObject = (obj = {}) => {
   droppedOutOrCompletedNone(obj);
   assessment = obj;
   if (obj.id) {
     extractTestIDBtn.removeAttribute('disabled');
+    deleteTestIcon.removeAttribute('disabled');
+    deleteTestIcon.classList.remove('hide-element');
   } else {
     extractTestIDBtn.setAttribute('disabled', 'disabled');
+    deleteTestIcon.setAttribute('disabled', 'disabled');
+    deleteTestIcon.classList.add('hide-element');
   }
 };
 
@@ -198,6 +255,9 @@ const clearInputValues = () => {
   });
 };
 
+/**
+ * @description filters candidates by email and renders the filtered list
+ */
 const searchByEmail = () => {
   const emailInput = select('.email-search-input');
   const candidateTable = select('[data-candidate-pool]');
@@ -591,6 +651,8 @@ const buildUI = ({ mode }) => {
     document.execCommand('Copy');
     textArea.remove();
   });
+
+  deleteTestIcon.addEventListener('click', openDeleteDialog);
 
   SPECS.get()
     .then(snapshot => {
