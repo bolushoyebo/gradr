@@ -446,6 +446,32 @@ const setAssessmentProgress = async () => {
   }};
 }
 
+/**
+ * @description checks whether the user has made changes to the code.
+ */
+const codeHasChanged = () => {
+  const currentCode = getCode();
+  return lastSavedCode !== currentCode;
+};
+
+/**
+ * @description Saves the codes from the editor
+ */
+const saveCode = () => {
+  if(codeHasChanged()){
+    const code = getCode();
+    if (!code) return;
+
+    notify('Saving Your Code...');
+    saveWork({
+      challengeIndex: assessmentProgress.challengeIndex,
+      completedChallenge: assessmentProgress.completedChallenge
+    });
+    lastSavedCode = code;
+    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
+  }
+};
+
 const setTheStage = async (challengeIndex, started) => {
   localStorage.setItem('challengeIndex', challengeIndex);
   notify('building your playground ...');
@@ -592,32 +618,6 @@ const handleSandboxMessages = async (event) => {
   }
 
   switchPreviewToEmulator();
-};
-
-/**
- * @description checks whether the user has made changes to the code.
- */
-const codeChanges = () => {
-  const currentCode = getCode();
-  return lastSavedCode !== currentCode;
-};
-
-/**
- * @description Saves the codes from the editor
- */
-const saveCode = () => {
-  if(codeChanges()){
-    const code = getCode();
-    if (!code) return;
-
-    notify('Saving Your Code...');
-    saveWork({
-      challengeIndex: assessmentProgress.challengeIndex,
-      completedChallenge: assessmentProgress.completedChallenge
-    });
-    lastSavedCode = code;
-    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
-  }
 };
 
 const handleSpecialKeyCombinations = () => {
