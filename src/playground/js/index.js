@@ -7,7 +7,8 @@ import {
   select,
   isAfterKickoffTime,
   loadStylesAndScripts,
-  handleWindowPopState
+  handleWindowPopState,
+  rAF
 } from '../../commons/js/utils.js';
 
 import {
@@ -168,9 +169,7 @@ const setupAuthentication = () => {
 };
 
 const takeOff = async () => {
-  // set the serverTime after every 30 seconds
-  global.serverTime = await getServerTime()
-  setTimeout(async() => { global.serverTime = await getServerTime()}, 30000);
+  global.serverTime = await getServerTime();
 
   importGARelay().then(module => {
     GARelay = module.default;
@@ -209,6 +208,12 @@ const takeOff = async () => {
       const swURL = `${window.location.origin}/sw.js`;
       navigator.serviceWorker.register(swURL);
     }
+
+    // set the serverTime after every 1 hour
+    // const serverPingInterval = 1000 * 60 * 60;
+    // rAF({wait: serverPingInterval}).then(async () => {
+    //   global.serverTime = await getServerTime();
+    // });
   }
 };
 
