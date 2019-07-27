@@ -32,6 +32,8 @@ let batchedProgress = [];
 let assessmentProgress = {};
 let savingBatchedProgress = false;
 
+let lastSavedCode;
+
 const SPECS = firebase.firestore().collection('specs');
 const SUBMISSIONS = firebase.firestore().collection('submissions');
 
@@ -334,7 +336,7 @@ const progressTo = async (challengeIndex) => {
 };
 
 const getCode = () => {
-  let codebase = editor.getValue();
+  let codebase = editor && editor.getValue();
   if (!codebase) {
     const { code } = JSON.parse(localStorage.getItem('work'));
     codebase = code;
@@ -415,6 +417,7 @@ const playCode = () => {
     },
     window.location.origin
   );
+  lastSavedCode = code;
 };
 
 const handleChallengeNavClicks = (event) => {
@@ -436,6 +439,45 @@ const handleChallengeNavClicks = (event) => {
     const step = target.getAttribute('data-challange-step') || 0;
     navigateToChallengeInstructions( parseInt(step, 10) );
     switchPreviewToInstructions();
+  }
+};
+
+/**
+ * @description fetches the users work and sets
+ * the value of the assessmentProgress variable
+ */
+const setAssessmentProgress = async () => {
+  const existingWork = await SUBMISSIONS.doc(projectId).get();
+  const data = existingWork.data();
+  assessmentProgress = {...assessmentProgress, ...{
+    challengeIndex: data.challengeIndex,
+    completedChallenge: data.completedChallenge 
+  }};
+}
+
+/**
+ * @description checks whether the user has made changes to the code.
+ */
+const codeHasChanged = () => {
+  const currentCode = getCode();
+  return lastSavedCode !== currentCode;
+};
+
+/**
+ * @description Saves the codes from the editor
+ */
+const saveCode = () => {
+  if(codeHasChanged()){
+    const code = getCode();
+    if (!code) return;
+
+    notify('Saving Your Code...');
+    saveWork({
+      challengeIndex: assessmentProgress.challengeIndex,
+      completedChallenge: assessmentProgress.completedChallenge
+    });
+    lastSavedCode = code;
+    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
   }
 };
 
@@ -511,6 +553,9 @@ const setTheStage = async (challengeIndex, started) => {
       Enter: 'emmetInsertLineBreak'
     }
   });
+
+  document.body.addEventListener('mouseleave', saveCode);
+  window.addEventListener('beforeunload', saveCode);
 
   notify('DONE!');
   return { codeEditor, sandbox, viewer };
@@ -610,6 +655,7 @@ const proceed = async (project) => {
   device = viewer;
   editor = codeEditor;
   editor.setValue(code);
+  lastSavedCode = code;
 
   editor.on("beforeChange", (_, change) => {
     if (change.origin === 'paste') change.cancel();
@@ -627,12 +673,7 @@ const proceed = async (project) => {
   
   if (whereAmI >= 0) {
     await progressTo(whereAmI);
-    const existingWork = await SUBMISSIONS.doc(projectId).get();
-    const data = existingWork.data();
-    assessmentProgress = {...assessmentProgress, ...{
-      challengeIndex: data.challengeIndex,
-      completedChallenge: data.completedChallenge 
-    }};
+    await setAssessmentProgress();
 
     const { endingAt } = assessment;
     if (isWithinDeadline({ endingAt })) {
@@ -646,7 +687,6 @@ const proceed = async (project) => {
     }
     playCode();
   }
-
 };
 
 const deferredEnter = async (args) => {
@@ -673,7 +713,7 @@ const deferredEnter = async (args) => {
 
 export const enter = async (args = {}) => {
   notify('Building your playground, please wait ...');
-  deferredEnter(args); 
+  deferredEnter(args);
 };
 export default { enter };
 

@@ -1,4 +1,5 @@
 import * as firebase from 'firebase/app';
+import dotenv from 'dotenv';
 
 import {
   trim,
@@ -21,6 +22,8 @@ let GARelay;
 let appUser;
 let provider;
 let uiIsBuilt = false;
+
+dotenv.config();
 
 const invalidURLMsg = 'Awwww Snaaap :( Your Assesment URL Is Invalid.';
 const testNotYetOpenMsg = `I see you're an early bird. However, this assessment is not yet open.`;
@@ -205,8 +208,14 @@ const takeOff = async () => {
     setupAuthentication();
 
     if(navigator.serviceWorker) {
-      const swURL = `${window.location.origin}/sw.js`;
-      navigator.serviceWorker.register(swURL);
+      if(process.env.NODE_ENV === 'development') {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach(registration => registration.unregister());
+        });
+      } else {
+        const swURL = `${window.location.origin}/sw.js`;
+        navigator.serviceWorker.register(swURL);
+      }
     }
   }
 };
