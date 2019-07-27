@@ -1,32 +1,52 @@
 {
   "name": "gradr",
   "version": "1.0.0",
+  "keywords": [],
+  "author": "Gradr Product Team",
   "scripts": {
+    "build-engines": "minify dist/playground/mygradr -d dist/playground/mygradr",
     "lint": "eslint src -c src/.eslintrc.json",
-    "develop-playground": "yarn monaco-dev-build && parcel src/playground/index.html --out-dir dev-build",
+    "develop-playground": "NODE_ENV=dev yarn monaco-dev-build && parcel src/playground/index.html --out-dir dev-build",
     "develop-admin": "yarn monaco-dev-build && parcel src/dash/index.html --out-dir dev-build",
-    "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground",
-    "build-admin": "yarn monaco-admin-build && parcel build src/dash/index.html --out-dir dist/admin",
+    "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground --no-source-maps",
+    "build-admin": "yarn monaco-admin-build && parcel build src/dash/index.html --out-dir dist/admin --no-source-maps",
     "deploy-admin": "firebase deploy --only hosting:admin",
-    "deploy-playground": "firebase deploy --only hosting:playground",
+    "deploy-playground": "minify dist/playground/mygradr -d dist/playground/mygradr && firebase deploy --only hosting:playground",
     "monaco-dev-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dev-build --no-source-maps",
     "monaco-playground-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/playground --no-source-maps",
     "monaco-admin-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/admin --no-source-maps"
   },
-  "keywords": [],
-  "author": "",
+  "staticFiles": {
+    "staticPath": [
+      {
+        "outDirPattern": "**/dist/playground",
+        "staticPath": "src/commons/engines",
+        "staticOutDir": "engines",
+        "watcherGlob": "**"
+      },
+      {
+        "outDirPattern": "**/dev-build",
+        "staticPath": "src/commons/engines",
+        "staticOutDir": "engines",
+        "watcherGlob": "**"
+      }
+    ]
+  },
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-env": "^7.2.3",
     "babel-eslint": "^10.0.1",
+    "babel-minify": "^0.5.0",
     "cssnano": "^4.1.8",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-config-prettier": "^3.4.0",
     "eslint-plugin-import": "^2.17.2",
+    "parcel-plugin-static-files-copy": "^2.1.2",
     "prettier": "^1.15.3",
-    "sass": "^1.22.0"
+    "sass": "^1.22.0",
+    "webpack-dev-server": "3.7.2"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",

@@ -68,7 +68,7 @@ node_modules/
 
 # parcel
 .cache/
-dev-build/
+dev-build
 
 #vscode
 .vscode

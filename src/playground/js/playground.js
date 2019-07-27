@@ -156,8 +156,8 @@ const createProject = async (email) => {
 
   // TODO remove this after fully migrating
   // all starter code into SPECs
-  if (!starterCodebase) {
-    const response = await fetch('/engines/tpl/start.html');
+  if(!starterCodebase) {
+    const response = await fetch('/mygradr/tpl/start.html');
     starterCodebase = await response.text();
   }
 
@@ -211,7 +211,7 @@ const setupInstructions = async (challengeIndex) => {
     let assessmentName = assessment.name || 'Andela Fellowship';
     assessmentName = assessmentName.replace(/\s+\w+-\d{2,}$/, '');
 
-    const response = await fetch(`/engines/tpl/intro.md`);
+    const response = await fetch(`/mygradr/tpl/intro.md`);
     const text = await response.text();
     return text
       .replace('{name}', appUser.displayName || '')
@@ -223,7 +223,7 @@ const setupInstructions = async (challengeIndex) => {
   }
 
   if (challengeIndex >= spec.challenges.length) {
-    const response = await fetch(`/engines/tpl/outro.md`);
+    const response = await fetch(`/mygradr/tpl/outro.md`);
     const text = await response.text();
     return text.replace('{name}', appUser.displayName || '');
   }
@@ -484,7 +484,7 @@ const setTheStage = async (challengeIndex, started) => {
 
   const sandbox = select('#sandbox');
   const viewer = select('#viewer');
-  sandbox.setAttribute('src', '/engines/sandbox.html');
+  sandbox.setAttribute('src', '/mygradr/sandbox.html');
   sandboxWindow = sandbox.contentWindow;
 
   if (challengeIndex >= 0 && started) {
