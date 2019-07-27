@@ -435,6 +435,7 @@ const handleChallengeNavClicks = (event) => {
 };
 
 const setTheStage = async (challengeIndex, started) => {
+  let codeEditor;
   localStorage.setItem('challengeIndex', challengeIndex);
   notify('building your playground ...');
 
@@ -489,9 +490,10 @@ const setTheStage = async (challengeIndex, started) => {
 
   if (challengeIndex >= 0 && started) {
     select('body').setAttribute('data-assessment', started);
+    codeEditor = monacoCreate({ language: language.html }, select('#code'));
+  }else {
+    codeEditor = monacoCreate({ language: language.html, readOnly: true}, select('#code'));
   }
-
-  const codeEditor = monacoCreate({ language: language.html }, select('#code'));
 
   notify('DONE!');
   return { codeEditor, sandbox, viewer };
@@ -629,8 +631,6 @@ const proceed = async (project) => {
   }
 
 };
-
-
 
 const deferredEnter = async (args) => {
   const { user, test, assessmentDoc } = args;
