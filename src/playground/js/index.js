@@ -1,5 +1,6 @@
 import * as firebase from 'firebase/app';
 import dotenv from 'dotenv';
+import getServerTime from '../../commons/js/getServerTime';
 
 import {
   trim,
@@ -7,7 +8,8 @@ import {
   select,
   isAfterKickoffTime,
   loadStylesAndScripts,
-  handleWindowPopState
+  handleWindowPopState,
+  rAF
 } from '../../commons/js/utils.js';
 
 import {
@@ -174,6 +176,8 @@ const setupAuthentication = () => {
 };
 
 const takeOff = async () => {
+  global.serverTime = await getServerTime();
+
   importGARelay().then(module => {
     GARelay = module.default;
   });
@@ -217,6 +221,12 @@ const takeOff = async () => {
         navigator.serviceWorker.register(swURL);
       }
     }
+
+    // set the serverTime after every 1 hour
+    // const serverPingInterval = 1000 * 60 * 60;
+    // rAF({wait: serverPingInterval}).then(async () => {
+    //   global.serverTime = await getServerTime();
+    // });
   }
 };
 
