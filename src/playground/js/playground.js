@@ -39,22 +39,47 @@ const SUBMISSIONS = firebase.firestore().collection('submissions');
 
 const challengeInfo = select('[data-challenge-info]');
 const testOverMsg = 'This assessment is closed. Your changes will not be saved or evaluated';
+const toastr = require('toastr')
 
-const notify = (msg) => {
+const notifyBuild = (msg) => {
   let message = trim(msg);
-  if (message === '') return;
-
-  if (message === 'ERROR') {
+  if(message === 'ERROR') {
     message = `You've Got One Or More Syntax Errors In Your Code!`;
   }
+  if (message === '') return;
+  const toastElement = select('#toast');
+  if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastElement);
+  toastElement.querySelector('.mdc-snackbar__label').textContent = message;
+  toast.setTimeoutMs = 0 
+  toast.timeoutMs = 4000;
 
-  const toastr = select('#toast');
-  if (!toast) toast = mdc.snackbar.MDCSnackbar.attachTo(toastr);
-  // toast.close();
+  toast.open(true);
+  
 
-  toastr.querySelector('.mdc-snackbar__label').textContent = message;
-  toast.timeoutMs = 10000;
-  toast.open();
+}
+const notify = (msg) => {
+  const message = trim(msg);
+  if (message === '') return;
+  toastr.remove()
+  toastr.options = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": false,
+    "positionClass": "toast-top-full-width",
+    "preventOpenDuplicates": true,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "0",
+    "extendedTimeOut": "0",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut",
+    "setCloseOnEscape": false
+  }
+  toastr.info('message', message)
 };
 
 const signOut = event => {
@@ -401,7 +426,7 @@ const challengeIntro = async () => {
 };
 
 const playCode = () => {
-  const challengeIndex = parseInt(localStorage.getItem('challengeIndex'), 10);
+  const challengeIndex = parseInt(localStorage.getItem('challengeIndex'), 10);  
   if (challengeIndex < 0) {
     initProject();
   }
@@ -409,7 +434,8 @@ const playCode = () => {
   const code = getCode();
   if (!code) return;
 
-  notify('Lets Run Your Code ...');
+  // Removed this for the mean time
+  // notifyBuild('Lets Run Your Code ...');
 
   prepareEmulatorPreview();
   const payload = extractCode(code);
@@ -521,7 +547,7 @@ const saveCode = () => {
 
 const setTheStage = async (challengeIndex, started) => {
   localStorage.setItem('challengeIndex', challengeIndex);
-  notify('building your playground ...');
+  notifyBuild('building your playground ...');
 
   mdc.topAppBar.MDCTopAppBar.attachTo(select('.mdc-top-app-bar'));
   setupAccount();
@@ -565,7 +591,7 @@ const setTheStage = async (challengeIndex, started) => {
     }
   });
 
-  notify('building your auto-grader ...');
+  notifyBuild('building your auto-grader ...');
 
   const sandbox = select('#sandbox');
   const viewer = select('#viewer');
@@ -581,7 +607,7 @@ const setTheStage = async (challengeIndex, started) => {
   document.body.addEventListener('mouseleave', saveCode);
   window.addEventListener('beforeunload', saveCode);
 
-  notify('DONE!');
+  notifyBuild('DONE!');
   return { codeEditor, sandbox, viewer };
 };
 
@@ -703,7 +729,7 @@ const deferredEnter = async (args) => {
 };
 
 export const enter = async (args = {}) => {
-  notify('Building your playground, please wait ...');
-  deferredEnter(args);
+  notifyBuild('Building your playground, please wait ...');
+  deferredEnter(args); 
 };
 export default { enter };

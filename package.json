@@ -8,13 +8,10 @@
     "monaco-dev-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dev-build --no-source-maps",
     "monaco-playground-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/playground --no-source-maps",
     "monaco-admin-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/admin --no-source-maps",
-
     "develop-playground": "yarn monaco-dev-build && parcel src/playground/index.html --out-dir dev-build",
     "develop-admin": "yarn monaco-dev-build && parcel src/dash/index.html --out-dir dev-build",
-
     "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground --no-source-maps",
     "build-admin": "yarn monaco-admin-build && parcel build src/dash/index.html --out-dir dist/admin --no-source-maps",
-
     "deploy-admin": "firebase deploy --only hosting:admin",
     "deploy-playground": "minify dist/playground/mygradr -d dist/playground/mygradr && firebase deploy --only hosting:playground"
   },
@@ -64,6 +61,7 @@
     "lit-html": "^1.0.0",
     "marked": "0.6.3",
     "mo": "^1.7.3",
-    "monaco-editor": "0.17.1"
+    "monaco-editor": "0.17.1",
+    "toastr": "^2.1.4"
   }
 }

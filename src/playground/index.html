@@ -19,6 +19,7 @@
 
   <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
   <link rel="stylesheet" href="./css/main.scss" />
+  <link href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
 
   <!-- FID Monitor Core -->
   <script>
@@ -65,7 +66,7 @@
     </div>
   </div>
 
-  <div class="mdc-snackbar mdc-snackbar--stacked" id="intro-toast">
+  <div class="mdc-snackbar mdc-snackbar--baseline" id="intro-toast">
     <div class="mdc-snackbar__surface">
       <div class="mdc-snackbar__label" role="status" aria-live="polite"></div>
     </div>
@@ -92,9 +93,10 @@
     </div>
 
     <div data-view="playground">
-      <div class="mdc-snackbar mdc-snackbar--stacked" id="toast">
+      <div class="mdc-snackbar mdc-snackbar--baseline" id="toast">
         <div class="mdc-snackbar__surface">
-          <div class="mdc-snackbar__label" role="status" aria-live="polite"></div>
+          <div class="mdc-snackbar__label" role="status" aria-live="polite">
+          </div>
         </div>
       </div>
 

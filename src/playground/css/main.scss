@@ -357,15 +357,22 @@ body[data-nav='playground'] #launcher-svg-container.km-chat-icon-sidebox img {
 }
 /* End Playground */
 
-body[data-nav='playground'] .mdc-snackbar.mdc-snackbar--open,
-body[data-nav='playground'] .mdc-snackbar.mdc-snackbar--closing {
-  position: fixed;
-  top: -5px;
-  left: 0;
-  right: 0;
-  bottom: auto;
-}
-
 body[data-nav='playground'] .mdc-snackbar.mdc-snackbar--open .mdc-snackbar__label {
   font-size: 110%;
+}
+
+#toast-container {
+  // width: 300px;
+  .toast-message {
+    color: #000;
+  }
+}
+#toast-container>.toast-info {
+  background-color: #000;
+  margin-left: 20% !important;
+  width: 30% !important;
+
+}
+.toast-message {
+  color: #000;
 }
