@@ -156,6 +156,7 @@ body[data-assessment] header.mdc-top-app-bar--short-collapsed button {
   float: right;
   width: calc(100% - 60px);
   height: calc(100vh - 98px);
+  touch-action: none;
 }
 
 #code .CodeMirror-vscrollbar {
@@ -165,6 +166,11 @@ body[data-assessment] header.mdc-top-app-bar--short-collapsed button {
 #code .CodeMirror-wrap {
   height: 100%;
   min-height: 100%;
+}
+
+// hide cut/paste and command palate from the context menu options
+li.action-item:nth-child(n + 6) {
+  display: none !important;
 }
 
 /* Style The Challenge Instructions */

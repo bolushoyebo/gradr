@@ -1,7 +1,6 @@
 import * as firebase from "firebase/app";
 
 import marked from 'marked';
-import emmet from '@emmetio/codemirror-plugin';
 
 import {
   rAF,
@@ -12,9 +11,10 @@ import {
   countDown,
   extractCode,
   dateTimeDiff,
-  isWithinDeadline,
-  loadCodemirrorAssets
+  isWithinDeadline
 } from '../../commons/js/utils.js';
+import language from '../../commons/js/monacoEditor/monaco-lang';
+import { monacoCreate } from '../../commons/js/monacoEditor/monaco-init';
 
 let spec;
 let toast;
@@ -44,7 +44,7 @@ const notify = (msg) => {
   let message = trim(msg);
   if (message === '') return;
 
-  if(message === 'ERROR') {
+  if (message === 'ERROR') {
     message = `You've Got One Or More Syntax Errors In Your Code!`;
   }
 
@@ -91,16 +91,16 @@ const setupAccount = () => {
 };
 
 const prepareEmulatorPreview = () => {
-  if(device) device.classList.remove('live');
-  if(instructions) instructions.classList.remove('live');
+  if (device) device.classList.remove('live');
+  if (instructions) instructions.classList.remove('live');
 };
 
 const switchPreviewToEmulator = () => {
-  if(instructions) {
+  if (instructions) {
     instructions.classList.remove('live');
   }
 
-  if(device) {
+  if (device) {
     device.classList.add('live');
   }
 
@@ -108,11 +108,11 @@ const switchPreviewToEmulator = () => {
 };
 
 const switchPreviewToInstructions = () => {
-  if(device) {
+  if (device) {
     device.classList.remove('live');
   }
-  
-  if(instructions) {
+
+  if (instructions) {
     instructions.classList.add('live');
   }
 
@@ -136,7 +136,7 @@ const showCountdown = async () => {
       let type = 'hour';
       let ellapsedDiff = dateTimeDiff({ to: deadline, type });
 
-      if(ellapsedDiff > 24) {
+      if (ellapsedDiff > 24) {
         type = 'day'
         ellapsedDiff = dateTimeDiff({ to: deadline, type });
       }
@@ -172,7 +172,7 @@ const createProject = async (email) => {
 
   const ref = await SUBMISSIONS.add(entry);
   projectId = ref.id;
-  const project = await SUBMISSIONS.doc(projectId).get();  
+  const project = await SUBMISSIONS.doc(projectId).get();
   return project;
 };
 
@@ -187,25 +187,25 @@ const updateLastSeenTime = async (project) => {
   return updated;
 };
 
-const createOrUpdateProject = async () =>  {
-    const { email } = appUser;
-    const query = SUBMISSIONS
-      .where('assessment', '==', testId)
-      .where('email', '==', email);
-    
-    const snapshot = await query.get();
-    if(snapshot.empty === true) {
-      notify('Initialising your assessment, please wait ...');
-      const created = await createProject(email);
-      return created;
-    } 
+const createOrUpdateProject = async () => {
+  const { email } = appUser;
+  const query = SUBMISSIONS
+    .where('assessment', '==', testId)
+    .where('email', '==', email);
 
-    const [doc] = snapshot.docs;
-    const updated = await updateLastSeenTime({
-      id: doc.id, 
-      data: doc.data()
-    });
-    return updated;
+  const snapshot = await query.get();
+  if (snapshot.empty === true) {
+    notify('Initialising your assessment, please wait ...');
+    const created = await createProject(email);
+    return created;
+  }
+
+  const [doc] = snapshot.docs;
+  const updated = await updateLastSeenTime({
+    id: doc.id,
+    data: doc.data()
+  });
+  return updated;
 };
 
 const setupInstructions = async (challengeIndex) => {
@@ -234,9 +234,9 @@ const setupInstructions = async (challengeIndex) => {
 };
 
 const safelyIncrementChallengeIndex = (challengeLength, challengeIndex) => {
-    const normalised =
-      challengeIndex >= challengeLength ? challengeLength : challengeIndex + 1;
-    return normalised;
+  const normalised =
+    challengeIndex >= challengeLength ? challengeLength : challengeIndex + 1;
+  return normalised;
 };
 
 const navigateToChallengeInstructions = async (challengeIndex) => {
@@ -262,7 +262,7 @@ const navigateToChallengeInstructions = async (challengeIndex) => {
 
   const challengeLen = spec.challenges.length;
   const normalised = safelyIncrementChallengeIndex(challengeLen, challengeIndex);
-  
+
   if (appTitle && progress) {
     appTitle.textContent = spec.name;
     progress.textContent =
@@ -270,7 +270,7 @@ const navigateToChallengeInstructions = async (challengeIndex) => {
         ? 'Mini App!'
         : `Challenge ${normalised} of ${challengeLen}`;
 
-    if(normalised > challengeLen) {
+    if (normalised > challengeLen) {
       progress.textContent = `You've Completed ${progress.textContent}`
     }
   }
@@ -287,45 +287,45 @@ const displayProgressAndInstructions = async (challengeIndex) => {
     normalised === challengeLen ? normalised - 1 : normalised
   );
 
-  if(challengeIndex >= 0) {
+  if (challengeIndex >= 0) {
 
     Array.from(selectAll(`button[data-challange-step]`))
-    .map(btn => {
-      if(btn) {
-        // btn.setAttribute('disabled', 'disabled');
-        btn.removeAttribute('data-challange-status');
-        btn.removeAttribute('data-challange-audit');
-      }
-      return btn;
-    });
+      .map(btn => {
+        if (btn) {
+          // btn.setAttribute('disabled', 'disabled');
+          btn.removeAttribute('data-challange-status');
+          btn.removeAttribute('data-challange-audit');
+        }
+        return btn;
+      });
 
-    const challangeSlots = Array.from({length: challengeLen + 1}, (x, i) => i);
+    const challangeSlots = Array.from({ length: challengeLen + 1 }, (x, i) => i);
     const slotsCoverage = challangeSlots.slice(0, challangeSlots.indexOf(challengeIndex));
 
     // tick off challenges the candidate has completed
     slotsCoverage.forEach(slot => {
       const btn = select(`button[data-challange-step='${slot}']`);
-      if(btn) {
+      if (btn) {
         btn.setAttribute('data-challange-audit', 'passing');
       }
     });
 
     // indicate the current challenge
     const btn = select(`button[data-challange-step='${challengeIndex}']`);
-    if(btn) {
+    if (btn) {
       btn.setAttribute('data-challange-status', 'active');
     }
   }
 };
 
 const getAssessmentSpec = async () => {
-  if(!spec || spec.id !== assessment.spec) {
+  if (!spec || spec.id !== assessment.spec) {
     const specification = await SPECS.doc(assessment.spec).get();
     spec = {
       id: specification.id,
       ...specification.data()
     };
-  } 
+  }
 
   return spec;
 };
@@ -335,6 +335,10 @@ const progressTo = async (challengeIndex) => {
   displayProgressAndInstructions(challengeIndex);
 };
 
+/**
+ * @function
+ * @returns {string} code written by candidate
+ */
 const getCode = () => {
   let codebase = editor && editor.getValue();
   if (!codebase) {
@@ -349,7 +353,7 @@ const initProject = async () => {
   const started = Date.now();
 
   let aName = [''];
-  if(appUser && appUser.displayName) {
+  if (appUser && appUser.displayName) {
     aName = appUser.displayName.split(/\s+/);
   }
 
@@ -376,7 +380,7 @@ const challengeIntro = async () => {
     select('body').classList.add('mdc-dialog-scroll-lock', 'mdc-dialog--open');
 
     let aName = [''];
-    if(appUser && appUser.displayName) {
+    if (appUser && appUser.displayName) {
       aName = appUser.displayName.split(/\s+/);
     }
 
@@ -422,7 +426,7 @@ const playCode = () => {
 
 const handleChallengeNavClicks = (event) => {
   event.preventDefault();
-  
+
   const target = event.target.closest('button');
   const isActive = target.getAttribute('data-challange-status') === 'active';
   const isPassing = target.getAttribute('data-challange-audit') === 'passing';
@@ -437,9 +441,43 @@ const handleChallengeNavClicks = (event) => {
   
   if(navState) {
     const step = target.getAttribute('data-challange-step') || 0;
-    navigateToChallengeInstructions( parseInt(step, 10) );
+    navigateToChallengeInstructions(parseInt(step, 10));
     switchPreviewToInstructions();
   }
+};
+
+const saveWorkBatched = async () => {
+  savingBatchedProgress = true;
+  const start = { completedChallenge: -1, challengeIndex: 0 };
+  const performance = batchedProgress.reduce((perf, { completedChallenge, challengeIndex }) => {
+    if (completedChallenge > perf.completedChallenge) {
+      return { completedChallenge, challengeIndex };
+    }
+    return perf;
+  }, start);
+
+  await updateProjectWork({
+    ...performance,
+    lastRun: Date.now(),
+    code: editor.getValue()
+  });
+
+  batchedProgress = [];
+  savingBatchedProgress = false;
+  assessmentProgress = { ...assessmentProgress, ...performance };
+};
+
+const saveWork = ({completedChallenge, challengeIndex}) => {
+  if(batchedProgress.length === 0) {
+    rAF({wait: 5000})
+    .then(() => {
+      saveWorkBatched();
+    });
+  }
+
+  if (savingBatchedProgress === true) return;
+
+  batchedProgress.push({ completedChallenge, challengeIndex });
 };
 
 /**
@@ -507,8 +545,8 @@ const setTheStage = async (challengeIndex, started) => {
   });
 
   const toggleViewer = new mdc.iconButton.MDCIconButtonToggle(select('#toggle-viewer'));
-  toggleViewer.listen('MDCIconButtonToggle:change', ({detail}) => {
-    if(detail.isOn === true) {
+  toggleViewer.listen('MDCIconButtonToggle:change', ({ detail }) => {
+    if (detail.isOn === true) {
       switchPreviewToEmulator();
       GARelay.ga('send', {
         hitType: 'event',
@@ -538,61 +576,13 @@ const setTheStage = async (challengeIndex, started) => {
     select('body').setAttribute('data-assessment', started);
   }
 
-  await loadCodemirrorAssets({ mode: 'htmlmixed' });
-  emmet(CodeMirror);
-  const codeEditor = CodeMirror(select('#code'), {
-    theme: 'idea',
-    autofocus: true,
-    lineNumbers: true,
-    lineWrapping: true,
-    matchBrackets: true,
-    autoCloseBrackets: true,
-    mode: { name: 'htmlmixed' },
-    extraKeys: {
-      Tab: 'emmetExpandAbbreviation',
-      Enter: 'emmetInsertLineBreak'
-    }
-  });
+  const codeEditor = monacoCreate({ language: language.html }, select('#code'));
 
   document.body.addEventListener('mouseleave', saveCode);
   window.addEventListener('beforeunload', saveCode);
 
   notify('DONE!');
   return { codeEditor, sandbox, viewer };
-};
-
-const saveWorkBatched = async () => {
-  savingBatchedProgress = true;
-  const start = {completedChallenge: -1, challengeIndex: 0};
-  const performance = batchedProgress.reduce((perf, {completedChallenge, challengeIndex}) => {
-    if(completedChallenge > perf.completedChallenge) {
-      return {completedChallenge, challengeIndex};
-    }
-    return perf;
-  }, start);
-
-  await updateProjectWork({
-    ...performance,
-    lastRun: Date.now(),
-    code: editor.getValue()
-  });
-
-  batchedProgress = [];
-  savingBatchedProgress = false;
-  assessmentProgress = {...assessmentProgress, ...performance};
-};
-
-const saveWork = ({completedChallenge, challengeIndex}) => {
-  if(batchedProgress.length === 0) {
-    rAF({wait: 5000})
-    .then(() => {
-      saveWorkBatched();
-    });
-  }
-
-  if(savingBatchedProgress === true) return;
-
-  batchedProgress.push({completedChallenge, challengeIndex});
 };
 
 const handleSandboxMessages = async (event) => {
@@ -607,7 +597,7 @@ const handleSandboxMessages = async (event) => {
   const { endingAt } = assessment;
   if (isWithinDeadline({ endingAt })) {
 
-    if(advancement) {
+    if (advancement) {
       const { index, completed } = advancement;
       const normalisedIndex = index >= spec.challenges.length ? completed : index;
 
@@ -623,7 +613,7 @@ const handleSandboxMessages = async (event) => {
       });
     }
   } else {
-    notify( testOverMsg );
+    notify(testOverMsg);
   }
 
   switchPreviewToEmulator();
@@ -648,7 +638,7 @@ const handleSpecialKeyCombinations = () => {
 
 const proceed = async (project) => {
   const { code, started, challengeIndex } = project;
-  const whereAmI = !started ? -1 : parseInt(challengeIndex, 10); 
+  const whereAmI = !started ? -1 : parseInt(challengeIndex, 10);
 
   const stage = await setTheStage(whereAmI, started);
   const { codeEditor, viewer } = stage;
@@ -657,10 +647,9 @@ const proceed = async (project) => {
   editor.setValue(code);
   lastSavedCode = code;
 
-  editor.on("beforeChange", (_, change) => {
-    if (change.origin === 'paste') change.cancel();
+  editor.onDidPaste(() => {
+    editor.getModel().undo();
   });
-  editor.refresh();
 
   instructions = select('#instructions');
   rAF({ wait: 500 }).then(() => showCountdown());
@@ -669,25 +658,27 @@ const proceed = async (project) => {
 
   if (whereAmI === -1) {
     challengeIntro();
-  } 
-  
+  }
+
   if (whereAmI >= 0) {
     await progressTo(whereAmI);
     await setAssessmentProgress();
 
     const { endingAt } = assessment;
     if (isWithinDeadline({ endingAt })) {
-      if((whereAmI + 1) >= spec.challenges.length) {
+      if ((whereAmI + 1) >= spec.challenges.length) {
         // though within deadline, this user has completed this assessment. 
         playCode();
         return;
-      } 
+      }
       switchPreviewToInstructions();
       return;
     }
     playCode();
   }
 };
+
+
 
 const deferredEnter = async (args) => {
   const { user, test, assessmentDoc } = args;
@@ -716,5 +707,3 @@ export const enter = async (args = {}) => {
   deferredEnter(args);
 };
 export default { enter };
-
-
