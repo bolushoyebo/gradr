@@ -12,7 +12,7 @@
     "develop-playground": "yarn monaco-dev-build && parcel src/playground/index.html --out-dir dev-build",
     "develop-admin": "yarn monaco-dev-build && parcel src/dash/index.html --out-dir dev-build",
 
-    "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground --no-source-maps && minify dist/playground/mygradr -d dist/playground/mygradr",
+    "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground --no-source-maps",
     "build-admin": "yarn monaco-admin-build && parcel build src/dash/index.html --out-dir dist/admin --no-source-maps",
 
     "deploy-admin": "firebase deploy --only hosting:admin",
