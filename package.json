@@ -8,13 +8,10 @@
     "monaco-dev-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dev-build --no-source-maps",
     "monaco-playground-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/playground --no-source-maps",
     "monaco-admin-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/admin --no-source-maps",
-
     "develop-playground": "yarn monaco-dev-build && parcel src/playground/index.html --out-dir dev-build",
     "develop-admin": "yarn monaco-dev-build && parcel src/dash/index.html --out-dir dev-build",
-
     "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground --no-source-maps",
     "build-admin": "yarn monaco-admin-build && parcel build src/dash/index.html --out-dir dist/admin --no-source-maps",
-
     "deploy-admin": "firebase deploy --only hosting:admin",
     "deploy-playground": "firebase deploy --only hosting:playground"
   },
@@ -51,6 +48,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",
+    "@emmetio/codemirror-plugin": "^0.5.4",
     "astq": "^2.6.1",
     "chart.js": "^2.8.0",
     "chartjs-plugin-colorschemes": "^0.3.0",
