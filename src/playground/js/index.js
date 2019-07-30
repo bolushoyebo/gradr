@@ -1,4 +1,6 @@
 import * as firebase from 'firebase/app';
+import dotenv from 'dotenv';
+import getServerTime from '../../commons/js/getServerTime';
 
 import {
   trim,
@@ -6,7 +8,8 @@ import {
   select,
   isAfterKickoffTime,
   loadStylesAndScripts,
-  handleWindowPopState
+  handleWindowPopState,
+  rAF
 } from '../../commons/js/utils.js';
 
 import {
@@ -21,6 +24,8 @@ let GARelay;
 let appUser;
 let provider;
 let uiIsBuilt = false;
+
+dotenv.config();
 
 const invalidURLMsg = 'Awwww Snaaap :( Your Assesment URL Is Invalid.';
 const testNotYetOpenMsg = `I see you're an early bird. However, this assessment is not yet open.`;
@@ -72,17 +77,21 @@ const setupSignIn = () => {
 };
 
 const fetchImpliedAssessment = () => {
-  notify('Still busy, please wait ...');
-  const assessmentId = testId
-    .split('')
-    .reverse()
-    .join('');
+  try {
+    notify('Still busy, please wait ...');
+    const assessmentId = testId
+      .split('')
+      .reverse()
+      .join('');
 
-  return firebase
-    .firestore()
-    .collection('assessments')
-    .get()
-    .then(snapshot => snapshot.docs.find(doc => doc.id === assessmentId));
+    return firebase
+      .firestore()
+      .collection('assessments')
+      .doc(assessmentId)
+      .get();
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const assessmentIsLive = assessmentDoc => {
@@ -140,7 +149,6 @@ const bootstrapAssessment = async user => {
 
 const setupAuthentication = () => {
   provider = new firebase.auth.GithubAuthProvider();
-  provider.addScope('repo');
   provider.setCustomParameters({
     allow_signup: 'false'
   });
@@ -167,6 +175,8 @@ const setupAuthentication = () => {
 };
 
 const takeOff = async () => {
+  global.serverTime = await getServerTime();
+
   importGARelay().then(module => {
     GARelay = module.default;
   });
@@ -200,16 +210,22 @@ const takeOff = async () => {
     GARelay.tryResend();
     setupAuthentication();
 
-    if (process.env.NODE_ENV === 'development') {
-      if (navigator.serviceWorker) {
+    if(navigator.serviceWorker) {
+      if(process.env.NODE_ENV === 'development') {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
           registrations.forEach(registration => registration.unregister());
         });
+      } else {
+        const swURL = `${window.location.origin}/sw.js`;
+        navigator.serviceWorker.register(swURL);
       }
-    } else if (navigator.serviceWorker) {
-      const swURL = `${window.location.origin}/sw.js`;
-      navigator.serviceWorker.register(swURL);
     }
+
+    // set the serverTime after every 1 hour
+    // const serverPingInterval = 1000 * 60 * 60;
+    // rAF({wait: serverPingInterval}).then(async () => {
+    //   global.serverTime = await getServerTime();
+    // });
   }
 };
 

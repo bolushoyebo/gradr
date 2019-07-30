@@ -191,8 +191,12 @@ body[data-nav='assessments'] .mdc-card.text-only:hover {
   margin-right: 0.5em;
 }
 
-[data-view='create-edit-test'] #from-date-field,
-[data-view='create-edit-test'] #to-date-field {
+[data-action=delete-test] {
+  margin-top: -0.2em;
+}
+
+[data-view=create-edit-test] #from-date-field,
+[data-view=create-edit-test] #to-date-field {
   margin: 0.8em 0;
 }
 
@@ -299,8 +303,15 @@ body[data-nav='assessments'] .mdc-card.text-only:hover {
   padding-left: -20px;
   margin-left: -40px;
 }
-.spec-card {
+.spec-card{
   height: 100%;
 }
 
+.hide-element {
+  display: None;
+}
+
+#challenge-starter{
+  min-height: 420px
+}
 /* End Assesstemts */

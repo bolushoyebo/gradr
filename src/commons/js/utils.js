@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+
 export const noop = () => {};
 
 export const trim = (raw = '') => `${raw}`.trim();
@@ -159,25 +161,19 @@ export const responseCanErr = response => {
   return response;
 };
 
-const dateToUTCTime = (d) => {
-  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()-1, d.getMinutes());
-};
+const dateToUTCTime = (d) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()-1, d.getMinutes());
 
-export const isAfterKickoffTime = args => {
+export const isAfterKickoffTime = (args) => {
   const { startingAt } = args;
-
-  const when = dateToUTCTime( new Date(Date.now()) );
+  const when = dateToUTCTime(new Date(serverTime));
   const limit = dateToUTCTime( new Date(`${startingAt}`) );
-  
   return when >= limit;
 };
 
-export const isWithinDeadline = args => {
+export const isWithinDeadline = (args) => {
   const { endingAt } = args;
-
-  const when = dateToUTCTime( new Date(Date.now()) );
+  const when = dateToUTCTime( new Date(serverTime) );
   const limit = dateToUTCTime( new Date(`${endingAt}`) );
-  
   return when <= limit;
 };
 
@@ -189,12 +185,9 @@ const timeUnits = {
 };
 
 export const dateTimeDiff = (args = {}) => {
-  const { from = Date.now(), to = Date.now(), type = "hour" } = args;
-
-  const fromTime = from;
+  const { to = Date.now(), type = "hour" } = args;
   const toTime = typeof to === "number" ? to : to.getTime();
-
-  let diff = Math.floor(toTime - fromTime) / timeUnits[type];
+  const diff = Math.floor(toTime - serverTime) / timeUnits[type];
   return Math.round(diff);
 };
 

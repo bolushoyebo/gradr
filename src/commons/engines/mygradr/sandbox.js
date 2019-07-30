@@ -2,6 +2,8 @@ let specId;
 let parentWindow;
 const noAutoGradrErrorMsg =
   'auto-grading for this assessment is not yet available';
+const auditsInstallFailedMsg = 'Unable to load your auto grader. Kindly contact the admin';
+
 const relay = data => {
   parentWindow.postMessage(data, window.location.origin);
 };
@@ -12,17 +14,20 @@ const executeScript = code =>
     try {
       ast = esprima.parseScript(code);
     } catch (error) {
-      reject(Error('Awwww Snaaap :( your javascript code has one or more syntax errors ...'));
+      reject(
+        Error(
+          'Awwww Snaaap :( your javascript code has one or more syntax errors ...'
+        )
+      );
     }
 
-    if(!ast) return;
+    if (!ast) return;
 
-    if('undefined' !== typeof gradrInstrumentation) {
-      // TODO rename this to 
-      // gradrCodemod
+    if (typeof gradrInstrumentation !== 'undefined') {
+      // TODO rename this to gradrCodemod
       ast = gradrInstrumentation(ast);
     }
-    
+
     ast.body = ast.body.map(n => {
       const node = n;
       if (node.type === 'VariableDeclaration') {
@@ -50,7 +55,11 @@ const executeStyle = code =>
 
     csstree.parse(code, {
       onParseError: () => {
-        reject(Error('Awwww Snaaap :( your CSS code has one or more syntax errors ...'));
+        reject(
+          Error(
+            'Awwww Snaaap :( your CSS code has one or more syntax errors ...'
+          )
+        );
       }
     });
 
@@ -94,36 +103,44 @@ const runAudits = payload => {
 };
 
 const installAutoGrader = event =>
-  new Promise((resolve, reject) => {
+  new Promise(async (resolve, reject) => {
     if (specId) return resolve();
 
     specId = event.data.spec;
     const autoGradrURL = `${window.location.origin}/mygradr/${specId}.js`;
 
-    // check if auto-grading script exists
-    // else, throw an error in the parse attempt
-    return fetch(autoGradrURL)
-      .then(response => response.text())
-      .then(code => {
-        esprima.parseScript(code);
-
-        // install auto-grading script
-        const script = document.createElement('script');
-        script.onload = resolve;
-        document.body.appendChild(script);
-        script.src = `${autoGradrURL}`;
-
-        // setup gradr as a client to the SW
-        if(navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'ping'
-          });
+    try {
+      const response = await fetch(autoGradrURL, {
+        headers: {
+          Accept: 'application/javascript'
         }
-        return resolve();
-      })
-      .catch(() => {
-        reject(new Error(noAutoGradrErrorMsg));
       });
+
+      const contentType = response.headers.get('content-type');
+      if(!response.ok && contentType.indexOf('javascript') === -1) {
+        reject(
+          new Error(auditsInstallFailedMsg)
+        );
+      }
+
+      // install auto-grading script for this assessment
+      const script = document.createElement('script');
+      script.onload = () => resolve();
+      document.body.appendChild(script);
+      script.src = `${autoGradrURL}`;
+
+       //setup gradr as a client to the SW
+      if(navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'ping'
+        });
+      }
+
+    } catch (error) {
+      reject(
+        new Error(auditsInstallFailedMsg)
+      );
+    }
   });
 
 const playCode = event => {
@@ -136,7 +153,7 @@ const playCode = event => {
     .then(() => executeStyle(styles))
     .then(() => executeScript(script))
     .then(() => runAudits({ styles, markup, script }))
-    .catch(({message}) => {
+    .catch(({ message }) => {
       relay({
         feedback: { message }
       });

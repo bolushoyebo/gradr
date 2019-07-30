@@ -238,6 +238,7 @@ body[data-assessment] #instructions [data-challenge-info-wrap] {
   margin-top: -62px;
   height: calc(100vh - 120px);
   font-family: Roboto,sans-serif;
+  word-break: break-word;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   font-size: 1rem;

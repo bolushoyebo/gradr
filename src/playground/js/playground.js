@@ -32,6 +32,8 @@ let batchedProgress = [];
 let assessmentProgress = {};
 let savingBatchedProgress = false;
 
+let lastSavedCode;
+
 const SPECS = firebase.firestore().collection('specs');
 const SUBMISSIONS = firebase.firestore().collection('submissions');
 
@@ -115,6 +117,19 @@ const switchPreviewToInstructions = () => {
   }
 
   select('#toggle-viewer').classList.remove('mdc-icon-button--on');
+};
+
+const handleWindowReSize = () => {
+  const editorContainer = select('#code .monaco-editor');
+  const editorWraper = select('#code .monaco-editor [data-mprt="3"]');
+  const editorEl = select('#code .monaco-editor .monaco-scrollable-element.editor-scrollable');
+  [editorContainer, editorWraper, editorEl].forEach((element, index, arr) => {
+    const node = element;
+    node.style.width = '100%';
+    if(index === (arr.length - 1)) {
+      node.style.width = 'calc(100% - 62px)';
+    }
+  });
 };
 
 const showCountdown = async () => {
@@ -239,9 +254,18 @@ const safelyIncrementChallengeIndex = (challengeLength, challengeIndex) => {
 
 const navigateToChallengeInstructions = async (challengeIndex) => {
   const intructions = await setupInstructions(challengeIndex);
-  if (challengeInfo) {
+  if(challengeInfo) {
+    const renderer = new marked.Renderer();
+    renderer.link = (href, title, text) => {
+      const normalisedTitle = title === null ? 'external resource' : title;
+      let target = '';
+      if(/http|www/.test(href)) target = `target="_blank"`;
+      return `<a href="${href}" title="${normalisedTitle}" ${target}>${text}</a>`;
+    }
+
     challengeInfo.innerHTML = marked(intructions, {
       gfm: true,
+      renderer,
       smartLists: true
     });
   }
@@ -329,7 +353,7 @@ const progressTo = async (challengeIndex) => {
  * @returns {string} code written by candidate
  */
 const getCode = () => {
-  let codebase = editor.getValue();
+  let codebase = editor && editor.getValue();
   if (!codebase) {
     const { code } = JSON.parse(localStorage.getItem('work'));
     codebase = code;
@@ -410,6 +434,7 @@ const playCode = () => {
     },
     window.location.origin
   );
+  lastSavedCode = code;
 };
 
 const handleChallengeNavClicks = (event) => {
@@ -431,6 +456,79 @@ const handleChallengeNavClicks = (event) => {
     const step = target.getAttribute('data-challange-step') || 0;
     navigateToChallengeInstructions(parseInt(step, 10));
     switchPreviewToInstructions();
+  }
+};
+
+const saveWorkBatched = async () => {
+  savingBatchedProgress = true;
+  const start = { completedChallenge: -1, challengeIndex: 0 };
+  const performance = batchedProgress.reduce((perf, { completedChallenge, challengeIndex }) => {
+    if (completedChallenge > perf.completedChallenge) {
+      return { completedChallenge, challengeIndex };
+    }
+    return perf;
+  }, start);
+
+  await updateProjectWork({
+    ...performance,
+    lastRun: Date.now(),
+    code: editor.getValue()
+  });
+
+  batchedProgress = [];
+  savingBatchedProgress = false;
+  assessmentProgress = { ...assessmentProgress, ...performance };
+};
+
+const saveWork = ({completedChallenge, challengeIndex}) => {
+  if(batchedProgress.length === 0) {
+    rAF({wait: 5000})
+    .then(() => {
+      saveWorkBatched();
+    });
+  }
+
+  if (savingBatchedProgress === true) return;
+
+  batchedProgress.push({ completedChallenge, challengeIndex });
+};
+
+/**
+ * @description fetches the users work and sets
+ * the value of the assessmentProgress variable
+ */
+const setAssessmentProgress = async () => {
+  const existingWork = await SUBMISSIONS.doc(projectId).get();
+  const data = existingWork.data();
+  assessmentProgress = {...assessmentProgress, ...{
+    challengeIndex: data.challengeIndex,
+    completedChallenge: data.completedChallenge 
+  }};
+}
+
+/**
+ * @description checks whether the user has made changes to the code.
+ */
+const codeHasChanged = () => {
+  const currentCode = getCode();
+  return lastSavedCode !== currentCode;
+};
+
+/**
+ * @description Saves the codes from the editor
+ */
+const saveCode = () => {
+  if(codeHasChanged()){
+    const code = getCode();
+    if (!code) return;
+
+    notify('Saving Your Code...');
+    saveWork({
+      challengeIndex: assessmentProgress.challengeIndex,
+      completedChallenge: assessmentProgress.completedChallenge
+    });
+    lastSavedCode = code;
+    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
   }
 };
 
@@ -495,42 +593,14 @@ const setTheStage = async (challengeIndex, started) => {
     codeEditor = monacoCreate({ language: language.html, readOnly: true}, select('#code'));
   }
 
-  notify('DONE!');
-  return { codeEditor, sandbox, viewer };
-};
-
-const saveWorkBatched = async () => {
-  savingBatchedProgress = true;
-  const start = { completedChallenge: -1, challengeIndex: 0 };
-  const performance = batchedProgress.reduce((perf, { completedChallenge, challengeIndex }) => {
-    if (completedChallenge > perf.completedChallenge) {
-      return { completedChallenge, challengeIndex };
-    }
-    return perf;
-  }, start);
-
-  await updateProjectWork({
-    ...performance,
-    lastRun: Date.now(),
-    code: editor.getValue()
+  document.body.addEventListener('mouseleave', saveCode);
+  window.addEventListener('beforeunload', saveCode);
+  window.addEventListener('resize', () => {
+    rAF().then(() => handleWindowReSize());
   });
 
-  batchedProgress = [];
-  savingBatchedProgress = false;
-  assessmentProgress = { ...assessmentProgress, ...performance };
-};
-
-const saveWork = ({completedChallenge, challengeIndex}) => {
-  if(batchedProgress.length === 0) {
-    rAF({wait: 5000})
-    .then(() => {
-      saveWorkBatched();
-    });
-  }
-
-  if (savingBatchedProgress === true) return;
-
-  batchedProgress.push({ completedChallenge, challengeIndex });
+  notify('DONE!');
+  return { codeEditor, sandbox, viewer };
 };
 
 const handleSandboxMessages = async (event) => {
@@ -593,6 +663,8 @@ const proceed = async (project) => {
   device = viewer;
   editor = codeEditor;
   editor.setValue(code);
+  lastSavedCode = code;
+
   editor.onDidPaste(() => {
     editor.getModel().undo();
   });
@@ -608,14 +680,7 @@ const proceed = async (project) => {
 
   if (whereAmI >= 0) {
     await progressTo(whereAmI);
-    const existingWork = await SUBMISSIONS.doc(projectId).get();
-    const data = existingWork.data();
-    assessmentProgress = {
-      ...assessmentProgress, ...{
-        challengeIndex: data.challengeIndex,
-        completedChallenge: data.completedChallenge
-      }
-    };
+    await setAssessmentProgress();
 
     const { endingAt } = assessment;
     if (isWithinDeadline({ endingAt })) {
@@ -629,7 +694,6 @@ const proceed = async (project) => {
     }
     playCode();
   }
-
 };
 
 const deferredEnter = async (args) => {

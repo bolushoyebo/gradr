@@ -6,15 +6,15 @@
   "scripts": {
     "build-engines": "minify dist/playground/mygradr -d dist/playground/mygradr",
     "lint": "eslint src -c src/.eslintrc.json",
+    "monaco-dev-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dev-build --no-source-maps",
+    "monaco-playground-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/playground --no-source-maps",
+    "monaco-admin-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/admin --no-source-maps",
     "develop-playground": "yarn monaco-dev-build && parcel src/playground/index.html --out-dir dev-build",
     "develop-admin": "yarn monaco-dev-build && parcel src/dash/index.html --out-dir dev-build",
     "build-playground": "yarn monaco-playground-build && parcel build src/playground/index.html --out-dir dist/playground --no-source-maps",
     "build-admin": "yarn monaco-admin-build && parcel build src/dash/index.html --out-dir dist/admin --no-source-maps",
     "deploy-admin": "firebase deploy --only hosting:admin",
-    "deploy-playground": "minify dist/playground/mygradr -d dist/playground/mygradr && firebase deploy --only hosting:playground",
-    "monaco-dev-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dev-build --no-source-maps",
-    "monaco-playground-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/playground --no-source-maps",
-    "monaco-admin-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/admin --no-source-maps"
+    "deploy-playground": "firebase deploy --only hosting:playground"
   },
   "staticFiles": {
     "staticPath": [
@@ -55,7 +55,8 @@
     "chartjs-plugin-colorschemes": "^0.3.0",
     "chartjs-plugin-datalabels": "^0.6.0",
     "chartjs-plugin-doughnutlabel": "^2.0.3",
-    "firebase": "^6.0.2",
+    "dotenv": "^8.0.0",
+    "firebase": "^6.2.4",
     "first-input-delay": "^0.1.3",
     "g": "^2.0.1",
     "intl-relative-time-format": "^1.0.6",
