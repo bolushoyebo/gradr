@@ -57,11 +57,11 @@ const notifyBuild = (msg) => {
   
 
 }
-const notify = (msg) => {
+const toastFeedback = (msg, overrideOptions) => {
   const message = trim(msg);
   if (message === '') return;
   toastr.remove()
-  toastr.options = {
+  const defaultOptions = {
     "closeButton": true,
     "debug": false,
     "newestOnTop": false,
@@ -79,6 +79,7 @@ const notify = (msg) => {
     "hideMethod": "fadeOut",
     "setCloseOnEscape": false
   }
+  toastr.options = {...defaultOptions, ...overrideOptions}
   toastr.info('message', message)
 };
 
@@ -220,7 +221,7 @@ const createOrUpdateProject = async () => {
 
   const snapshot = await query.get();
   if (snapshot.empty === true) {
-    notify('Initialising your assessment, please wait ...');
+    toastFeedback('Initialising your assessment, please wait ...');
     const created = await createProject(email);
     return created;
   }
@@ -387,7 +388,7 @@ const initProject = async () => {
   select('body').setAttribute('data-assessment', started);
   
   progressTo(challengeIndex);
-  notify(`Yo, you can now begin the assessment. Take it away ${aName[0]}!`);
+  toastFeedback(`Yo, you can now begin the assessment. Take it away ${aName[0]}!`);
   rAF({ wait: 500 }).then(() => {
     select('body').classList.remove('mdc-dialog-scroll-lock', 'mdc-dialog--open');
   });
@@ -409,7 +410,7 @@ const challengeIntro = async () => {
       aName = appUser.displayName.split(/\s+/);
     }
 
-    notify(`Thats right ${aName[0]}! Please wait while we start things off for you ...`);
+    toastFeedback(`Thats right ${aName[0]}! Please wait while we start things off for you ...`);
     initProject();
     
     GARelay.ga('send', {
@@ -434,8 +435,7 @@ const playCode = () => {
   const code = getCode();
   if (!code) return;
 
-  // Removed this for the mean time
-  // notifyBuild('Lets Run Your Code ...');
+  toastFeedback('Lets Run Your Code ...');
 
   prepareEmulatorPreview();
   const payload = extractCode(code);
@@ -534,14 +534,17 @@ const saveCode = () => {
   if(codeHasChanged()){
     const code = getCode();
     if (!code) return;
-
-    notify('Saving Your Code...');
+    const options = {
+      "timeOut": "5000",
+      "extendedTimeOut": "100"
+    }
+    toastFeedback('Saving Your Code...', options);
     saveWork({
       challengeIndex: assessmentProgress.challengeIndex,
       completedChallenge: assessmentProgress.completedChallenge
     });
     lastSavedCode = code;
-    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
+    rAF({ wait: 2000 }).then(() => toastFeedback('Your code has been saved!', options));
   }
 };
 
@@ -617,7 +620,7 @@ const handleSandboxMessages = async (event) => {
   const { feedback, advancement } = event.data;
 
   if (feedback) {
-    notify(feedback.message);
+    toastFeedback(feedback.message);
   }
 
   const { endingAt } = assessment;
@@ -639,7 +642,7 @@ const handleSandboxMessages = async (event) => {
       });
     }
   } else {
-    notify(testOverMsg);
+    toastFeedback(testOverMsg);
   }
 
   switchPreviewToEmulator();

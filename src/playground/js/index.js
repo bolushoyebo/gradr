@@ -32,7 +32,7 @@ const testNotYetOpenMsg = `I see you're an early bird. However, this assessment 
 
 const notify = msg => {
   if (!toast || trim(msg) === '') return;
-  toast = mdc.snackbar.MDCSnackbar.attachTo(select('#intro-toast'));
+
   select('#intro-toast .mdc-snackbar__label').textContent = msg;
   toast.open();
 };
@@ -183,8 +183,8 @@ const takeOff = async () => {
   });
 
   handleWindowPopState();
+  toast = mdc.snackbar.MDCSnackbar.attachTo(select('#intro-toast'));
   const { pathname } = window.location;
-
   if (pathname === '/' || pathname === '/!') {
     enterHome();
     notify(invalidURLMsg);
