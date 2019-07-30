@@ -46,6 +46,7 @@ const monacoCreate = (MonacoConfig = {}, doc) => monaco.editor.create(doc, {
   readOnly: false,
   showUnused: true,
   wordWrap: "on",
+  automaticLayout: true,
   selectionClipboard: false,
   ...MonacoConfig
 });
