@@ -482,6 +482,9 @@ const saveWorkBatched = async () => {
 
 const saveWork = ({completedChallenge, challengeIndex}) => {
   if(batchedProgress.length === 0) {
+    // TODO queue this with promises instead
+    // right now, we have no way of knowing 
+    // that the save operation is done or if it failed
     rAF({wait: 5000})
     .then(() => {
       saveWorkBatched();
@@ -522,13 +525,11 @@ const saveCode = () => {
     const code = getCode();
     if (!code) return;
 
-    notify('Saving Your Code...');
     saveWork({
       challengeIndex: assessmentProgress.challengeIndex,
       completedChallenge: assessmentProgress.completedChallenge
     });
     lastSavedCode = code;
-    rAF({ wait: 2000 }).then(() => notify('Your code has been saved!'));
   }
 };
 
@@ -615,26 +616,20 @@ const handleSandboxMessages = async (event) => {
     notify(feedback.message);
   }
 
-  const { endingAt } = assessment;
-  if (isWithinDeadline({ endingAt })) {
+  if (advancement) {
+    const { index, completed } = advancement;
+    const normalisedIndex = index >= spec.challenges.length ? completed : index;
 
-    if (advancement) {
-      const { index, completed } = advancement;
-      const normalisedIndex = index >= spec.challenges.length ? completed : index;
-
-      saveWork({
-        completedChallenge: completed,
-        challengeIndex: normalisedIndex
-      });
-      progressTo(index);
-    } else {
-      saveWork({
-        challengeIndex: assessmentProgress.challengeIndex,
-        completedChallenge: assessmentProgress.completedChallenge
-      });
-    }
+    saveWork({
+      completedChallenge: completed,
+      challengeIndex: normalisedIndex
+    });
+    progressTo(index);
   } else {
-    notify(testOverMsg);
+    saveWork({
+      challengeIndex: assessmentProgress.challengeIndex,
+      completedChallenge: assessmentProgress.completedChallenge
+    });
   }
 
   switchPreviewToEmulator();
