@@ -91,6 +91,10 @@ body[data-assessment] header.mdc-top-app-bar--short-collapsed button {
   pointer-events: all;
 }
 
+body[data-auth='authenticated'] {
+  background: aliceblue;
+}
+
 [data-view='playground'] div.mdc-layout-grid {
   padding: 5px;
   overflow: hidden;
@@ -380,4 +384,16 @@ body[data-nav='playground'] .mdc-snackbar.mdc-snackbar--open .mdc-snackbar__labe
 
 .mdc-dialog__surface {
   padding: 20px;
+}
+
+#playground-nav {
+  z-index: 1000;
+}
+
+body[data-nav=assessments] .mdc-card.text-only .mdc-card__primary-action {
+  padding: 1rem;
+}
+
+.spec-card {
+  height: 100%;
 }

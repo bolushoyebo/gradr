@@ -1,5 +1,6 @@
 import * as firebase from 'firebase/app';
 import dotenv from 'dotenv';
+import { html, render } from 'lit-html';
 import getServerTime from '../../commons/js/getServerTime';
 
 import {
@@ -9,7 +10,8 @@ import {
   isAfterKickoffTime,
   loadStylesAndScripts,
   handleWindowPopState,
-  rAF
+  selectAll,
+  isWithinDeadline
 } from '../../commons/js/utils.js';
 
 import {
@@ -24,11 +26,15 @@ let GARelay;
 let appUser;
 let provider;
 let uiIsBuilt = false;
+const activeAssessments = {};
 
 dotenv.config();
 
+const testsListEl = select('#tests-list');
 const invalidURLMsg = 'Awwww Snaaap :( Your Assesment URL Is Invalid.';
 const testNotYetOpenMsg = `I see you're an early bird. However, this assessment is not yet open.`;
+const unableToLoadMsg = 'Unable to load your assessment, please retry.';
+const busyCriticalMsg = 'Busy. Loading Critical Assets. Please Wait ...';
 
 const notify = msg => {
   if (!toast || trim(msg) === '') return;
@@ -112,7 +118,7 @@ const enterPlayground = async assessmentDoc => {
   playground.enter({ user: appUser, test: testId, assessmentDoc });
 };
 
-const enterHome = testId => {
+const enterHome = () => {
   goTo('home', { test: testId });
 };
 
@@ -125,7 +131,7 @@ const bootstrapAssessment = async user => {
   try {
     assessmentDoc = await fetchImpliedAssessment();
   } catch (error) {
-    notify('Unable to load your assessment, please retry.');
+    notify(unableToLoadMsg);
     console.warn(error.message);
 
     GARelay.ga('send', {
@@ -137,8 +143,8 @@ const bootstrapAssessment = async user => {
     });
   }
 
-  if (!assessmentDoc || !assessmentDoc.exists) {
-    notify('Unable to load your assessment, please retry.');
+  if(!assessmentDoc || !assessmentDoc.exists) {
+    notify(unableToLoadMsg);
     return;
   }
 
@@ -147,8 +153,14 @@ const bootstrapAssessment = async user => {
   await enterPlayground(assessmentDoc);
 };
 
-const setupAuthentication = () => {
-  provider = new firebase.auth.GithubAuthProvider();
+/**
+ * @description handles the github authentication
+ * and redirects to the requried view
+ * 
+ * @param {string} nextView 
+ */
+const setupAuthentication = async (nextView) => {
+  provider = await new firebase.auth.GithubAuthProvider();
   provider.setCustomParameters({
     allow_signup: 'false'
   });
@@ -167,12 +179,111 @@ const setupAuthentication = () => {
 
       return;
     }
-
-    goTo('intro', { test: testId });
-    bootstrapAssessment(user);
-    GARelay.ga('set', 'userId', `${user.email}`);
+    appUser = user;
+    if (nextView === 'assessments') {
+      goTo('assessments', {}, '!#assessments');
+    } else {
+      goTo('intro', { test: testId });
+      bootstrapAssessment(user);
+      GARelay.ga('set', 'userId', `${user.email}`);
+    }
   });
 };
+
+/**
+ * @description handles the click on an assessment card
+ * and changes the view to playground
+ * 
+ * @param {object} event 
+ */
+const moveToPlayground = event => {
+  const itemEl = event.target.closest('.mdc-card');
+  if (!itemEl) return;
+
+  const id = itemEl.getAttribute('data-key');
+  if (!id) {
+    notify(unableToLoadMsg);
+    return;
+  };
+
+  testId = id;
+  enterPlayground(activeAssessments[id]);
+}
+
+/**
+ * @description creates the assessments card for the assessment view
+ * 
+ * @param {object} assessment 
+ */
+const testsListItemTPL = assessment => ( html`
+    ${
+      assessment.map(
+      item => html`
+        <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-2">
+          <div
+            class="mdc-card text-only spec-card"
+            data-key=${item.id}
+            @click=${moveToPlayground}
+          >
+            <div class="mdc-card__primary-action" tabindex="0">
+              <h2 class="mdc-typography--headline6">
+                ${item.name} ${item.cycle}
+              </h2>
+              <div class="mdc-typography--body2"></div>
+            </div>
+          </div>
+        </div>
+      `
+    )}
+  `)
+
+/**
+ * @description loads the assessments from firebase
+ * and builds the UI for the assessments view
+ */
+const userWillViewTests = async () => {
+  notify(busyCriticalMsg);
+  const fb = await importFirebaseInitializer();
+
+  await fb.init();
+
+  setupAuthentication('assessments');
+
+  notify('Fetching assessments');
+  const ASSESSMENTS = firebase.firestore().collection('assessments');
+
+  ASSESSMENTS.get()
+    .then(snapshot => {
+      const tests = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const { status, endingAt } = data;
+        if (status !== 'archived' && isWithinDeadline({ endingAt })) {
+          tests.push({
+            id: doc.id,
+            ...data
+          });
+          // store the assessments in an object using the id as key
+          activeAssessments[doc.id] = doc;
+        }
+        render(testsListItemTPL(tests), testsListEl);
+      });
+    })
+    .catch((error) => console.warn(error));
+
+  [...selectAll('.mdc-chip-set')].forEach(chip => {
+    mdc.chips.MDCChip.attachTo(chip);
+  });
+
+  notify('DONE!');
+};
+
+const enterAssessments = () => {
+  select('body').setAttribute('data-auth', 'authenticated');
+  userWillViewTests();
+  mdc.topAppBar.MDCTopAppBar.attachTo(select('.mdc-top-app-bar'));
+};
+
 
 const takeOff = async () => {
   // get the serverTime right now and 
@@ -183,7 +294,7 @@ const takeOff = async () => {
     global.serverTime = await getServerTime();
   });
 
-  importGARelay().then(module => {
+  await importGARelay().then(module => {
     GARelay = module.default;
   });
 
@@ -192,8 +303,7 @@ const takeOff = async () => {
   const { pathname } = window.location;
 
   if (pathname === '/' || pathname === '/!') {
-    enterHome();
-    notify(invalidURLMsg);
+    enterAssessments();
     return;
   }
 
@@ -202,16 +312,19 @@ const takeOff = async () => {
     testId = matches[1].replace(/\/?!?$/, '');
 
     if (!testId) {
-      enterHome();
       notify(invalidURLMsg);
+      enterAssessments();
       return;
     }
+    enterHome();
 
-    notify('Busy. Loading Critical Assets. Please Wait ...');
+
+    notify(busyCriticalMsg);
     const fb = await importFirebaseInitializer();
-
+  
     notify('Busy, please wait ...');
     await fb.init();
+  
 
     GARelay.tryResend();
     setupAuthentication();
