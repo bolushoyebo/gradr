@@ -37,6 +37,12 @@ let lastSavedCode;
 const SPECS = firebase.firestore().collection('specs');
 const SUBMISSIONS = firebase.firestore().collection('submissions');
 
+const resetButtonIcon = select("#reset-code");
+const resetDialogComponent = select(`[data-action='reset-dialog']`);
+const cancelResetButton = select(`[data-mdc-dialog-action='close']`);
+const confirmResetButton = select(`[data-action='reset-confirm']`);
+const resetDialogScrim = select('.mdc-dialog__scrim');
+
 const challengeInfo = select('[data-challenge-info]');
 const testOverMsg = 'This assessment is closed. Your changes will not be saved or evaluated';
 
@@ -532,11 +538,38 @@ const saveCode = () => {
   }
 };
 
+const resetCodebase = () => {
+  resetDialogComponent.classList.remove('mdc-dialog--open');
+  const { starterCodebase } = spec;
+  editor.setValue(starterCodebase);
+  saveCode();
+}
+
+const closeResetDialog = () => {
+  resetDialogComponent.classList.remove('mdc-dialog--open');
+  cancelResetButton.removeEventListener('click', closeResetDialog);
+  resetDialogScrim.removeEventListener('click', closeResetDialog);
+  confirmResetButton.removeEventListener('click', resetCodebase);
+};
+
+const openResetDialog = () => {
+  const { starterCodebase } = spec;
+  const currentCodebase = editor.getValue();
+  if (!(starterCodebase === currentCodebase)) {
+    resetDialogComponent.classList.add('mdc-dialog--open');
+    cancelResetButton.addEventListener('click', closeResetDialog);
+    resetDialogScrim.addEventListener('click', closeResetDialog);
+    confirmResetButton.addEventListener('click', resetCodebase);
+  }
+};
+
 const setTheStage = async (challengeIndex, started) => {
   localStorage.setItem('challengeIndex', challengeIndex);
   notify('building your playground ...');
 
   mdc.topAppBar.MDCTopAppBar.attachTo(select('.mdc-top-app-bar'));
+  resetButtonIcon.style.display = 'block'; 
+  resetButtonIcon.addEventListener('click', openResetDialog)
   setupAccount();
 
   select('#runit').addEventListener('click', (event) => {

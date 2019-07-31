@@ -120,7 +120,7 @@ body[data-assessment] header.mdc-top-app-bar--short-collapsed button {
 
 #code-nav [data-challange-step] {
   float: left;
-  z-index: 10;
+  z-index: 1;
   font-size: 165%;
   background-color: transparent;
   color: rgba(0,0,0,.37);
@@ -254,7 +254,7 @@ body[data-assessment] #instructions [data-challenge-info-wrap] {
 
 #instructions.live {
   opacity: 1;
-  z-index: 10;
+  z-index: 1;
 }
 
 #viewer.live {
@@ -368,4 +368,16 @@ body[data-nav='playground'] .mdc-snackbar.mdc-snackbar--closing {
 
 body[data-nav='playground'] .mdc-snackbar.mdc-snackbar--open .mdc-snackbar__label {
   font-size: 110%;
+}
+
+#reset-code {
+  display: none;
+  position: absolute;
+  top: 3px;
+  margin-left: 120px;
+  color: black;
+}
+
+.mdc-dialog__surface {
+  padding: 20px;
 }
