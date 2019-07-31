@@ -399,7 +399,7 @@ const buildUI = ({ mode }) => {
   instructionsEditor = monacoCreate({ language: language.markdown }, select('#challenge-instructions'));
 
   // setup monaco for challenge instructions
-  starterEditor = monacoCreate({ language: language.javascript }, select('#challenge-starter'));
+  starterEditor = monacoCreate({ language: language.html }, select('#challenge-starter'));
 
   builtUI = true;
 };
