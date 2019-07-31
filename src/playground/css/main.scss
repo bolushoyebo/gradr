@@ -292,7 +292,8 @@ body[data-assessment] .action-begin {
 
 /* End Style The Challenge Instructions */
 
-body[data-nav='playground'] [data-profile] {
+body[data-nav='playground'] [data-profile],
+body[data-nav='assessments'] [data-profile] {
   position: fixed;
   top: 0.2em;
   right: 1em;
@@ -300,12 +301,15 @@ body[data-nav='playground'] [data-profile] {
   transition: width .5s, height .5s;
 }
 
-body[data-nav='playground'] [data-profile].has-usr-photo {
+body[data-nav='playground'] [data-profile].has-usr-photo,
+body[data-nav='assessments'] [data-profile].has-usr-photo  {
   width: 36px;
   height: 36px;
 }
 
-body[data-nav='playground'] [data-profile].has-usr-photo img {
+body[data-nav='playground'] [data-profile].has-usr-photo img,
+body[data-nav='assessments'] [data-profile].has-usr-photo img
+ {
   position: absolute;
   width: 36px;
   height: 36px;
@@ -314,7 +318,8 @@ body[data-nav='playground'] [data-profile].has-usr-photo img {
   border-radius: 50%;
 }
 
-body[data-nav='playground'] [data-profile].has-usr-photo > svg {
+body[data-nav='playground'] [data-profile].has-usr-photo > svg,
+body[data-nav='assessments'] [data-profile].has-usr-photo > svg  {
   display: none;
 }
 
@@ -323,7 +328,8 @@ body[data-nav='playground'] .mdc-menu .mdc-list {
   padding-top: 0px;
 }
 
-body[data-nav='playground'] .signout-btn {
+body[data-nav='playground'] .signout-btn,
+body[data-nav='assessments'] .signout-btn {
   left: 93% !important;
   top: 60px !important;
   min-width: 90px;

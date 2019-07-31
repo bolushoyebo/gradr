@@ -63,29 +63,50 @@ const notify = (msg) => {
   toast.open();
 };
 
-const signOut = event => {
+/**
+ * @description handles the signout action
+ * 
+ * @param {Object} event
+ * 
+ * @param {string} eventOrigin - the view where the event happened.
+ */
+const signOut = (event, eventOrigin) => {
   event.preventDefault();
   firebase.auth().signOut();
 
-  GARelay.ga('send', {
-    hitType: 'event',
-    eventCategory: 'Playground',
-    eventAction: 'signout',
-    eventLabel: `${assessment.slug}`
+  const eventLabel = (eventOrigin === 'playground') && `${assessment.slug}`;
+
+  import('../../commons/js/GARelay.js')
+  .then(module => {
+    GARelay = module.default;
+    GARelay.ga('send', {
+      hitType: 'event',
+      eventCategory: 'Playground',
+      eventAction: 'signout',
+      eventLabel
+    });
   });
+
 };
 
-const setupAccount = () => {
-  const userIconBtn = select('button[data-profile]');
-  if(appUser.photoURL) {
+/**
+ * @description handles the setup of user account
+ * 
+ * @param {Object} user
+ * 
+ * @param {string} eventOrigin - the view where the function was called.
+ */
+export const setupAccount = (user, eventOrigin) => {
+  const userIconBtn = select(`#${eventOrigin}-user-data`);
+  if(user.photoURL) {
     const img = document.createElement("img");
-    img.src = appUser.photoURL;
+    img.src = user.photoURL;
     userIconBtn.appendChild(img);
 
     userIconBtn.classList.add('has-usr-photo');
   }
   
-  const usrMenu = mdc.menu.MDCMenu.attachTo(select('.mdc-menu'));
+  const usrMenu = mdc.menu.MDCMenu.attachTo(select(`#${eventOrigin}-signout-btn`));
   userIconBtn.addEventListener('click', event => {
     event.preventDefault();
     if (!usrMenu.open) {
@@ -93,7 +114,8 @@ const setupAccount = () => {
     }
   });
   usrMenu.setFixedPosition(true);
-  select('#signout').addEventListener('click', signOut);
+  select(`#${eventOrigin}-signout`).addEventListener('click',
+    (event) => signOut(event, eventOrigin));
 };
 
 const prepareEmulatorPreview = () => {
@@ -605,7 +627,7 @@ const setTheStage = async (challengeIndex, started) => {
     resetButtonIcon.addEventListener('click', openResetDialog);
   }
 
-  setupAccount();
+  setupAccount(appUser, 'playground');
 
   select('#runit').addEventListener('click', (event) => {
     event.preventDefault();

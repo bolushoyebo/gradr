@@ -10,6 +10,7 @@ import {
   isAfterKickoffTime,
   loadStylesAndScripts,
   handleWindowPopState,
+  rAF,
   selectAll,
   isWithinDeadline
 } from '../../commons/js/utils.js';
@@ -164,6 +165,7 @@ const setupAuthentication = async (nextView) => {
   provider.setCustomParameters({
     allow_signup: 'false'
   });
+  const playground = await importPlayground();
 
   firebase.auth().onAuthStateChanged(user => {
     if (!user) {
@@ -180,8 +182,10 @@ const setupAuthentication = async (nextView) => {
       return;
     }
     appUser = user;
+
     if (nextView === 'assessments') {
       goTo('assessments', {}, '!#assessments');
+      playground.setupAccount(appUser, 'assessments');
     } else {
       goTo('intro', { test: testId });
       bootstrapAssessment(user);
@@ -206,7 +210,10 @@ const moveToPlayground = event => {
     return;
   };
 
-  testId = id;
+  testId = id
+    .split('')
+    .reverse()
+    .join('');
   enterPlayground(activeAssessments[id]);
 }
 
@@ -247,7 +254,7 @@ const userWillViewTests = async () => {
 
   await fb.init();
 
-  setupAuthentication('assessments');
+  await setupAuthentication('assessments');
 
   notify('Fetching assessments');
   const ASSESSMENTS = firebase.firestore().collection('assessments');
@@ -278,9 +285,9 @@ const userWillViewTests = async () => {
   notify('DONE!');
 };
 
-const enterAssessments = () => {
+const enterAssessments = async () => {
   select('body').setAttribute('data-auth', 'authenticated');
-  userWillViewTests();
+  await userWillViewTests();
   mdc.topAppBar.MDCTopAppBar.attachTo(select('.mdc-top-app-bar'));
 };
 

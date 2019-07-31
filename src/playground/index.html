@@ -146,6 +146,20 @@
             <div id="tests-list" class="mdc-layout-grid__inner">
             </div>
           </div>
+          <button data-profile class="mdc-icon-button material-icons mdc-elevation--z3" id="assessments-user-data">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+                <path d="M0 0h24v24H0z" fill="none" />
+              </svg>
+            </button>
+            <div class="mdc-menu mdc-menu-surface signout-btn" tabindex="-1" id="assessments-signout-btn">
+              <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical">
+                <li class="mdc-list-item" role="menuitem" id="assessments-signout">
+                  <span class="mdc-list-item__text">Signout</span>
+                </li>
+              </ul>
+            </div>
         </div>
       </div>
     </div>
@@ -224,16 +238,16 @@
       </div>
 
       <div data-timer>Deadline: <span></span></div>
-      <button data-profile class="mdc-icon-button material-icons mdc-elevation--z3">
+      <button data-profile class="mdc-icon-button material-icons mdc-elevation--z3" id="playground-user-data">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
           <path
             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
           <path d="M0 0h24v24H0z" fill="none" />
         </svg>
       </button>
-      <div class="mdc-menu mdc-menu-surface signout-btn" tabindex="-1">
+      <div class="mdc-menu mdc-menu-surface signout-btn" tabindex="-1" id="playground-signout-btn">
         <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical">
-          <li class="mdc-list-item" role="menuitem" id="signout">
+          <li class="mdc-list-item" role="menuitem" id="playground-signout">
             <span class="mdc-list-item__text">Signout</span>
           </li>
         </ul>
