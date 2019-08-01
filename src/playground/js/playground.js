@@ -367,6 +367,28 @@ const getCode = () => {
   return codebase;
 };
 
+const initOrResetProjectWork = async ({isReset, started, challengeIndex, displayName, completedChallenge = -1}) => {
+  let status = {challengeIndex, completedChallenge};
+  if(isReset) {
+    const { starterCodebase } = spec;
+    const resets = assessment.resets || [];
+    resets.push(Date.now());
+    status = {...status, ...{
+      resets,
+      code: starterCodebase
+    }};
+  } else {
+    status = {...status, ...{
+      started,
+      displayName
+    }};
+  }
+
+  await updateProjectWork(status);
+  assessmentProgress = {challengeIndex, completedChallenge};
+  if(!isReset) select('body').setAttribute('data-assessment', started);
+};
+
 const initProject = async () => {
   const challengeIndex = 0;
   const started = Date.now();
@@ -376,9 +398,7 @@ const initProject = async () => {
     aName = appUser.displayName.split(/\s+/);
   }
 
-  await updateProjectWork({ started, challengeIndex, displayName:aName.join(' ') });
-  assessmentProgress = {challengeIndex, completedChallenge: -1};
-  select('body').setAttribute('data-assessment', started);
+  initOrResetProjectWork({ started, challengeIndex, displayName:aName.join(' ') });
   
   progressTo(challengeIndex);
   notify(`Yo, you can now begin the assessment. Take it away ${aName[0]}!`);
@@ -538,11 +558,15 @@ const saveCode = () => {
   }
 };
 
-const resetCodebase = () => {
+const resetCodebase = async () => {
+  const { endingAt } = assessment;
+  if( !isWithinDeadline({endingAt}) ) return;
+
   resetDialogComponent.classList.remove('mdc-dialog--open');
+  await initOrResetProjectWork({ isReset: true, challengeIndex:0 });
+  
   const { starterCodebase } = spec;
   editor.setValue(starterCodebase);
-  saveCode();
 }
 
 const closeResetDialog = () => {
@@ -560,16 +584,24 @@ const openResetDialog = () => {
     cancelResetButton.addEventListener('click', closeResetDialog);
     resetDialogScrim.addEventListener('click', closeResetDialog);
     confirmResetButton.addEventListener('click', resetCodebase);
+  } else {
+    notify('Nothing to reset. You have not made changes to your starter code');
   }
 };
 
 const setTheStage = async (challengeIndex, started) => {
+  const { endingAt } = assessment;
+  const isBeforeDeadline = isWithinDeadline({ endingAt });
+
   localStorage.setItem('challengeIndex', challengeIndex);
   notify('building your playground ...');
 
   mdc.topAppBar.MDCTopAppBar.attachTo(select('.mdc-top-app-bar'));
-  resetButtonIcon.style.display = 'block'; 
-  resetButtonIcon.addEventListener('click', openResetDialog)
+  if(isBeforeDeadline) {
+    resetButtonIcon.style.display = 'block'; 
+    resetButtonIcon.addEventListener('click', openResetDialog);
+  }
+
   setupAccount();
 
   select('#runit').addEventListener('click', (event) => {
