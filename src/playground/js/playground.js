@@ -468,20 +468,34 @@ const saveWorkBatched = async () => {
   assessmentProgress = { ...assessmentProgress, ...performance };
 };
 
+/**
+ * @description handles the saving of users progress
+ * if the changes on the challenge is before the specified deadline
+ * 
+ * @param {object} assessment progress 
+ */
 const saveWork = ({completedChallenge, challengeIndex}) => {
-  if(batchedProgress.length === 0) {
-    // TODO queue this with promises instead
-    // right now, we have no way of knowing 
-    // that the save operation is done or if it failed
-    rAF({wait: 5000})
-    .then(() => {
-      saveWorkBatched();
-    });
+  const { endingAt } = assessment;
+  if(isWithinDeadline({ endingAt })){
+    notify('Saving Your Code...');
+    if(batchedProgress.length === 0) {
+      // TODO queue this with promises instead
+      // right now, we have no way of knowing 
+      // that the save operation is done or if it failed
+      rAF({wait: 5000})
+      .then(() => {
+        saveWorkBatched();
+      });
+    }
+
+    if (savingBatchedProgress === true) return;
+
+    batchedProgress.push({ completedChallenge, challengeIndex });
+
+    notify('Your changes have been saved');
+  } else {
+    notify(testOverMsg);
   }
-
-  if (savingBatchedProgress === true) return;
-
-  batchedProgress.push({ completedChallenge, challengeIndex });
 };
 
 /**
@@ -509,7 +523,8 @@ const codeHasChanged = () => {
  * @description Saves the codes from the editor
  */
 const saveCode = () => {
-  if(codeHasChanged()){
+  const { endingAt } = assessment;
+  if(codeHasChanged() && isWithinDeadline({ endingAt })){
     const code = getCode();
     if (!code) return;
 
