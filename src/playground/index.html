@@ -39,7 +39,7 @@
         </button>
       </section>
       <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-        <a href="#" id="runit" class="material-icons mdc-top-app-bar__action-item" aria-label="Run your code"
+        <button id="runit" class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Run your code"
           alt="Run your code">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none" />
@@ -47,8 +47,40 @@
               fill="#fff"
               d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
             </svg>
-        </a>
+          </button>
       </section>
+    </div>
+
+    <button id="reset-code" class="mdc-icon-button" aria-label="Reset your code to the starter code"
+      aria-hidden="true" aria-pressed="true" title="Reset your code to the starter code">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+    </button>
+
+    <div class="mdc-dialog" data-action="reset-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="my-dialog-title"
+      aria-describedby="my-dialog-content">
+      <div class="mdc-dialog__container">
+        <div class="mdc-dialog__surface">
+          <h2 class="mdc-dialog__title" id="my-dialog-title">
+              Reset Code to Starter Code
+          </h2>
+          <div class="mdc-dialog__content" id="my-dialog-content">
+            You will lose all your progress in this challenge.
+            Are you sure you want to reset your code?
+          </div>
+          <footer class="mdc-dialog__actions">
+            <button type="button" class="mdc-button mdc-dialog__button mdc-ripple-upgraded mdc-ripple-upgraded--background-focused" data-mdc-dialog-action="close">
+              <span class="mdc-button__label">Cancel</span>
+            </button>
+            <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="reset" data-action="reset-confirm">
+              <span class="mdc-button__label">Reset Code</span>
+            </button>
+          </footer>
+        </div>
+      </div>
+      <div class="mdc-dialog__scrim"></div>
     </div>
   </header>
 
