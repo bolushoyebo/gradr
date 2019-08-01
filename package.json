@@ -4,6 +4,7 @@
   "keywords": [],
   "author": "Gradr Product Team",
   "scripts": {
+    "build-engines": "minify dist/playground/mygradr -d dist/playground/mygradr",
     "lint": "eslint src -c src/.eslintrc.json",
     "monaco-dev-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dev-build --no-source-maps",
     "monaco-playground-build": "parcel build node_modules/monaco-editor/esm/vs/language/**/*.worker.js node_modules/monaco-editor/esm/vs/editor/**/*.worker.js --out-dir dist/playground --no-source-maps",
@@ -44,7 +45,8 @@
     "eslint-plugin-import": "^2.17.2",
     "parcel-plugin-static-files-copy": "^2.1.2",
     "prettier": "^1.15.3",
-    "sass": "^1.22.0"
+    "sass": "^1.22.0",
+    "webpack-dev-server": "3.7.2"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",

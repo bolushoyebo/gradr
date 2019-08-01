@@ -119,19 +119,6 @@ const switchPreviewToInstructions = () => {
   select('#toggle-viewer').classList.remove('mdc-icon-button--on');
 };
 
-const handleWindowReSize = () => {
-  const editorContainer = select('#code .monaco-editor');
-  const editorWraper = select('#code .monaco-editor [data-mprt="3"]');
-  const editorEl = select('#code .monaco-editor .monaco-scrollable-element.editor-scrollable');
-  [editorContainer, editorWraper, editorEl].forEach((element, index, arr) => {
-    const node = element;
-    node.style.width = '100%';
-    if(index === (arr.length - 1)) {
-      node.style.width = 'calc(100% - 62px)';
-    }
-  });
-};
-
 const showCountdown = async () => {
   if (!('RelativeTimeFormat' in Intl)) {
     await import('intl-relative-time-format');
@@ -373,7 +360,8 @@ const initProject = async () => {
   await updateProjectWork({ started, challengeIndex, displayName:aName.join(' ') });
   assessmentProgress = {challengeIndex, completedChallenge: -1};
   select('body').setAttribute('data-assessment', started);
-  
+  editor.updateOptions({readOnly: false});
+
   progressTo(challengeIndex);
   notify(`Yo, you can now begin the assessment. Take it away ${aName[0]}!`);
   rAF({ wait: 500 }).then(() => {
@@ -586,22 +574,16 @@ const setTheStage = async (challengeIndex, started) => {
   sandbox.setAttribute('src', '/mygradr/sandbox.html');
   sandboxWindow = sandbox.contentWindow;
 
+  let readOnly = true;
   if (challengeIndex >= 0 && started) {
+    readOnly = false;
     select('body').setAttribute('data-assessment', started);
   }
 
-  const codeEditor = monacoCreate({ 
-    language: language.html,
-    minimap: {
-      enabled: false
-    }
-   }, select('#code'));
+  const codeEditor = monacoCreate({ language: language.html, readOnly}, select('#code'));
 
   document.body.addEventListener('mouseleave', saveCode);
   window.addEventListener('beforeunload', saveCode);
-  window.addEventListener('resize', () => {
-    rAF().then(() => handleWindowReSize());
-  });
 
   notify('DONE!');
   return { codeEditor, sandbox, viewer };
@@ -693,8 +675,6 @@ const proceed = async (project) => {
     playCode();
   }
 };
-
-
 
 const deferredEnter = async (args) => {
   const { user, test, assessmentDoc } = args;

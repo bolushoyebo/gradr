@@ -2,7 +2,8 @@ import firebase from 'firebase/app';
 
 import marked from 'marked';
 import { html, render } from 'lit-html';
-import emmet from '@emmetio/codemirror-plugin';
+import {monacoCreate} from '../../commons/js/monacoEditor/monaco-init';
+import language from '../../commons/js/monacoEditor/monaco-lang';
 
 import {
   select,
@@ -10,7 +11,6 @@ import {
   goTo,
   rAF,
   toSlug,
-  loadCodemirrorAssets,
   trim,
   exceptId
 } from '../../commons/js/utils.js';
@@ -395,37 +395,11 @@ const buildUI = ({ mode }) => {
     });
   });
 
-  deleteSpecIcon.addEventListener('click', openDeleteDialog);
+  // setup monaco for challenge instructions
+  instructionsEditor = monacoCreate({ language: language.markdown }, select('#challenge-instructions'));
 
-  loadCodemirrorAssets({
-    mode: 'markdown'
-  }).then(() => {
-    instructionsEditor = CodeMirror(select('#challenge-instructions'), {
-      theme: 'idea',
-      autofocus: true,
-      lineWrapping: true,
-      matchBrackets: true,
-      autoCloseBrackets: true,
-      mode: { name: 'markdown', highlightFormatting: true }
-    });
-  });
-
-  loadCodemirrorAssets({
-    mode: 'htmlmixed'
-  }).then(() => {
-    starterEditor = CodeMirror(select('#challenge-starter'), {
-      theme: 'idea',
-      lineNumbers: true,
-      lineWrapping: true,
-      matchBrackets: true,
-      autoCloseBrackets: true,
-      mode: { name: 'htmlmixed' },
-      extraKeys: {
-        Tab: 'emmetExpandAbbreviation',
-        Enter: 'emmetInsertLineBreak'
-      }
-    });
-  });
+  // setup monaco for challenge instructions
+  starterEditor = monacoCreate({ language: language.html }, select('#challenge-starter'));
 
   builtUI = true;
 };

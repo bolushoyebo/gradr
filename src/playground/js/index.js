@@ -49,7 +49,7 @@ const signIn = () => {
         notify(
           'Make sure you are using the intended Github account. An account already exists with the same email address but different sign-in credentials.'
         );
-      }else if (code && code.indexOf('network-request-failed') !== -1) {
+      } else if (code && code.indexOf('network-request-failed') !== -1) {
         notify('Potential network error. Please refresh and try again!');
       } else {
         notify(`${message}`);
@@ -137,12 +137,12 @@ const bootstrapAssessment = async user => {
     });
   }
 
-  if(!assessmentDoc || !assessmentDoc.exists) {
+  if (!assessmentDoc || !assessmentDoc.exists) {
     notify('Unable to load your assessment, please retry.');
     return;
   }
 
-  if(!assessmentIsLive(assessmentDoc)) return;
+  if (!assessmentIsLive(assessmentDoc)) return;
 
   await enterPlayground(assessmentDoc);
 };
