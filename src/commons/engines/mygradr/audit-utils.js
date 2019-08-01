@@ -37,9 +37,9 @@ const css = (selectorOrNode, prop) => {
 
 const box = (...calls) => {
   let api = {};
-  for (call of calls) {
+  calls.forEach(call => {
     api = { ...api, ...{ [call.name]: call } };
-  }
+  });
   return api;
 };
 
@@ -69,10 +69,12 @@ const on = nodeOrSelector => {
   const results = [];
   const tellMe = () => results.includes(true);
 
-  const ifThe = (prop, transform, check, {debug} = {}) => {
+  const ifThe = (prop, transform, check, { debug } = {}) => {
     const actual = transform(css(nodeOrSelector, prop));
-    if(debug === true) {
-      console.log(`${prop} on ${nodeOrSelector} => ${actual} : ${check(actual)}`);
+    if (debug === true) {
+      console.log(
+        `${prop} on ${nodeOrSelector} => ${actual} : ${check(actual)}`
+      );
     }
     results.push(check(actual));
     return box(ifThe, tellMe);
@@ -82,10 +84,12 @@ const on = nodeOrSelector => {
 };
 
 const chain = (...tasks) => async data => {
-  return await tasks.reduce(async (prevTask, fn) => {
+  const computed = await tasks.reduce(async (prevTask, fn) => {
     const baton = await prevTask;
     return fn(baton);
   }, Promise.resolve(data));
+
+  return computed;
 };
 
 const haltAuditWith = reject => msg => {
@@ -123,7 +127,8 @@ const auditJavascript = async (js, assert) => {
   astq.adapter('mozast');
 
   const ast = esprima.parseScript(js);
-  return await assert({ ast, astq });
+  const outcome = await assert({ ast, astq });
+  return outcome;
 };
 
 const queryLiteralDeclaration = ({ kind = 'const', name, value }) => {
@@ -140,7 +145,11 @@ const queryLiteralDeclaration = ({ kind = 'const', name, value }) => {
   return query;
 };
 
-const queryNamedArrowFnHasCalls = ({ name, kind = 'const', calls = [] }) => {
+const queryNamedArrowFnHasCalls = ({
+  name,
+  kind = 'const',
+  calls = []
+}) => {
   const callsSubQuery = calls.reduce((lastCall, call, index) => {
     let prefix = index === 0 ? '' : `${lastCall} &&`;
     return `${prefix} //CallExpression /:callee Identifier [@name == '${call}'] `;
@@ -160,11 +169,15 @@ const queryNamedArrowFnHasCalls = ({ name, kind = 'const', calls = [] }) => {
   return query;
 };
 
-const queryNamedArrowFnHasParams = ({name, kind = 'const', params = []}) => {
+const queryNamedArrowFnHasParams = ({
+  name,
+  kind = 'const',
+  params = []
+}) => {
   const paramsSubQuery = params.reduce((prevQuery, param, index) => {
     const prefix = index === 0 ? '' : `${prevQuery} &&`;
     let qry = `${prefix} /:params`;
-    if(typeof param === 'string' || param.type === 'Identifier') {
+    if (typeof param === 'string' || param.type === 'Identifier') {
       qry = `${qry} Identifier [@name == '${param.name || param}']`;
     } else if (param.type === 'AssignmentPattern') {
       qry = `${qry} AssignmentPattern [
@@ -179,7 +192,7 @@ const queryNamedArrowFnHasParams = ({name, kind = 'const', params = []}) => {
       qry = `${qry} ObjectPattern [
       	/Property /Identifier [@name == '${param.name}']
       ]`;
-    }else {
+    } else {
       qry = prevQuery;
     }
 
@@ -189,7 +202,7 @@ const queryNamedArrowFnHasParams = ({name, kind = 'const', params = []}) => {
   // let x = [{
   //   type: 'Identifier', name: 'figure'
   // }, {
-  //   type: AssignmentPattern, 
+  //   type: AssignmentPattern,
   //   left: {type: 'Identifier', name: 'options'},
   //   right: {type: 'ArrayExpression'}
   // }];
@@ -209,12 +222,14 @@ const queryNamedArrowFnHasParams = ({name, kind = 'const', params = []}) => {
   return query;
 };
 
-const queryNamedArrowFnHasOnlySimpleParams = ({name, kind = 'const', params = []}) => {
+const queryNamedArrowFnHasOnlySimpleParams = ({
+  name,
+  kind = 'const',
+  params = []
+}) => {
   const paramsSubQuery = params.reduce((prevQuery, param, index) => {
     const prefix = index === 0 ? '' : `${prevQuery} &&`;
     const query = `${prefix} /:params `;
-    
-
 
     return query;
   }, '');
@@ -232,7 +247,7 @@ const queryNamedArrowFnHasOnlySimpleParams = ({name, kind = 'const', params = []
   `;
 
   return query;
-}
+};
 
 // TODO wrap the event calls under
 // /: arguments
@@ -263,7 +278,11 @@ const queryNamedArrowFnAddsEventsListener = ({
   return query;
 };
 
-const queryExpressionDeclaration = ({ kind = 'const', name, exprType }) => {
+const queryExpressionDeclaration = ({
+  kind = 'const',
+  name,
+  exprType
+}) => {
   const query = `
     //VariableDeclaration [
       @kind == '${kind}' &&
@@ -283,29 +302,6 @@ const queryArrowFunction = ({ kind = 'const', name }) => {
     exprType: 'ArrowFunctionExpression'
   });
 };
-
-/*const isDeclaration = ({ node, kind = 'const', name, init }) => {
-  const left =
-    node &&
-    node.type === 'VariableDeclaration' &&
-    node.kind === kind &&
-    node.declarations &&
-    node.declarations[0] &&
-    node.declarations[0].type === 'VariableDeclarator' &&
-    node.declarations[0].id &&
-    node.declarations[0].id.type === 'Identifier' &&
-    node.declarations[0].id.name === name;
-
-  if (!init) return left;
-
-  const right =
-    node.declarations &&
-    node.declarations[0] &&
-    node.declarations[0].init &&
-    node.declarations[0].init.type === init;
-
-  return left && right;
-};*/
 
 const userBeganChallenges = args =>
   new Promise(resolve => {

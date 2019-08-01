@@ -499,10 +499,10 @@ const saveWorkBatched = async () => {
  * 
  * @param {object} assessment progress 
  */
-const saveWork = ({completedChallenge, challengeIndex}) => {
+const saveWork = ({completedChallenge, challengeIndex, silent = false}) => {
   const { endingAt } = assessment;
   if(isWithinDeadline({ endingAt })){
-    notify('Saving Your Code...');
+    if(!silent) notify('Saving Your Code...');
     if(batchedProgress.length === 0) {
       // TODO queue this with promises instead
       // right now, we have no way of knowing 
@@ -517,7 +517,7 @@ const saveWork = ({completedChallenge, challengeIndex}) => {
 
     batchedProgress.push({ completedChallenge, challengeIndex });
 
-    notify('Your changes have been saved');
+    if(!silent) notify('Your changes have been saved');
   } else {
     notify(testOverMsg);
   }
@@ -659,7 +659,7 @@ const setTheStage = async (challengeIndex, started) => {
     select('body').setAttribute('data-assessment', started);
   }
 
-  const codeEditor = monacoCreate({ language: language.html, readOnly}, select('#code'));
+  const codeEditor = monacoCreate({ language: language.html, fontSize: 16, readOnly}, select('#code'));
 
   document.body.addEventListener('mouseleave', saveCode);
   window.addEventListener('beforeunload', saveCode);
@@ -682,12 +682,14 @@ const handleSandboxMessages = async (event) => {
     const normalisedIndex = index >= spec.challenges.length ? completed : index;
 
     saveWork({
+      silent: true,
       completedChallenge: completed,
       challengeIndex: normalisedIndex
     });
     progressTo(index);
   } else {
     saveWork({
+      silent: true,
       challengeIndex: assessmentProgress.challengeIndex,
       completedChallenge: assessmentProgress.completedChallenge
     });
@@ -725,7 +727,7 @@ const proceed = async (project) => {
   lastSavedCode = code;
 
   editor.onDidPaste(() => {
-    editor.getModel().undo();
+    //editor.getModel().undo();
   });
 
   instructions = select('#instructions');
