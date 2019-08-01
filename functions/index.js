@@ -6,9 +6,9 @@ admin.initializeApp();
 
 // firebase function to get current server timestamp
 exports.getServerTime = functions.https.onRequest((request, response ) => {
-    return cors(request, response, () => {
-        const serverTime = Date.now();
-        return response.send({time: serverTime});
-    });
+    cors(request, response, () => {
+        const serverTime = Date.now()
+        response.send({time: serverTime});
+    })
 });
 

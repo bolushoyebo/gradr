@@ -175,7 +175,9 @@ const setupAuthentication = () => {
 };
 
 const takeOff = async () => {
-  global.serverTime = await getServerTime();
+  // set the serverTime after every 3 seconds
+  global.serverTime = await getServerTime()
+  setInterval(async() => {global.serverTime += 3000}, 3000);
 
   importGARelay().then(module => {
     GARelay = module.default;
