@@ -165,14 +165,14 @@ const dateToUTCTime = (d) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()
 
 export const isAfterKickoffTime = (args) => {
   const { startingAt } = args;
-  const when = dateToUTCTime(new Date(global.serverTime));
+  const when = dateToUTCTime(new Date(serverTime));
   const limit = dateToUTCTime( new Date(`${startingAt}`) );
   return when >= limit;
 };
 
 export const isWithinDeadline = (args) => {
   const { endingAt } = args;
-  const when = dateToUTCTime( new Date(global.serverTime) );
+  const when = dateToUTCTime( new Date(serverTime) );
   const limit = dateToUTCTime( new Date(`${endingAt}`) );
   return when <= limit;
 };
@@ -187,7 +187,7 @@ const timeUnits = {
 export const dateTimeDiff = (args = {}) => {
   const { to = Date.now(), type = "hour" } = args;
   const toTime = typeof to === "number" ? to : to.getTime();
-  const diff = Math.floor(toTime - global.serverTime) / timeUnits[type];
+  const diff = Math.floor(toTime - serverTime) / timeUnits[type];
   return Math.round(diff);
 };
 

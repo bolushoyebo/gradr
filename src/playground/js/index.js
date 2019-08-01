@@ -175,9 +175,13 @@ const setupAuthentication = () => {
 };
 
 const takeOff = async () => {
-  // set the serverTime after every 3 seconds
-  global.serverTime = await getServerTime()
-  setInterval(async() => {global.serverTime += 3000}, 3000);
+  // get the serverTime right now and 
+  // uodate it after every 1 hour
+  global.serverTime = await getServerTime();
+  const serverPingInterval = 1000 * 60 * 60;
+  rAF({wait: serverPingInterval}).then(async () => {
+    global.serverTime = await getServerTime();
+  });
 
   importGARelay().then(module => {
     GARelay = module.default;
@@ -222,12 +226,6 @@ const takeOff = async () => {
         navigator.serviceWorker.register(swURL);
       }
     }
-
-    // set the serverTime after every 1 hour
-    // const serverPingInterval = 1000 * 60 * 60;
-    // rAF({wait: serverPingInterval}).then(async () => {
-    //   global.serverTime = await getServerTime();
-    // });
   }
 };
 
