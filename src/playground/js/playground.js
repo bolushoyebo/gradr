@@ -727,7 +727,7 @@ const proceed = async (project) => {
   lastSavedCode = code;
 
   editor.onDidPaste(() => {
-    //editor.getModel().undo();
+    editor.getModel().undo();
   });
 
   instructions = select('#instructions');
