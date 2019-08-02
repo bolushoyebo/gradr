@@ -345,7 +345,14 @@ const progressTo = async (challengeIndex) => {
  * @function
  * @returns {string} code written by candidate
  */
-const getCode = async () => editor.getValue();
+const getCode = () =>  {
+  let codebase = editor && editor.getValue();
+  if (!codebase) {
+    const { code } = JSON.parse(localStorage.getItem('work'));
+    codebase = code;
+  }
+  return codebase;
+}
 
 const initOrResetProjectWork = async ({isReset, started, challengeIndex, displayName, completedChallenge = -1}) => {
   let status = {challengeIndex, completedChallenge};
