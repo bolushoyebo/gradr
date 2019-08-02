@@ -1,6 +1,6 @@
 import * as firebase from 'firebase/app';
 import dotenv from 'dotenv';
-import getServerTime from '../../commons/js/getServerTime';
+import getServerTime from '../../commons/js/getServerTime.js';
 
 import {
   trim,

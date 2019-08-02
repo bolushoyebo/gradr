@@ -1,6 +1,8 @@
 import firebase from 'firebase/app';
+import dotenv from 'dotenv';
+import getServerTime from '../../commons/js/getServerTime.js';
 
-import { select, goTo, handleWindowPopState } from '../../commons/js/utils.js';
+import { select, goTo, handleWindowPopState, rAF } from '../../commons/js/utils.js';
 
 import {
   importFirebaseInitializer
@@ -9,6 +11,7 @@ import {
 const importDash = () => import('./dashboard.js');
 
 let provider;
+dotenv.config();
 
 const signIn = () => {
   if (!provider) return;
@@ -29,8 +32,15 @@ const setupSignIn = () => {
   }
 };
 
-const takeOff = () => {
-  
+const takeOff = async () => {
+  // get the serverTime right now and 
+  // uodate it after every 1 hour
+  global.serverTime = await getServerTime();
+  const serverPingInterval = 1000 * 60 * 60;
+  rAF({wait: serverPingInterval}).then(async () => {
+    global.serverTime = await getServerTime();
+  });
+
   handleWindowPopState();
   importFirebaseInitializer().then(fbInitializer => {
     fbInitializer.init();
