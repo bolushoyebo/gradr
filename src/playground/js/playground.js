@@ -345,14 +345,7 @@ const progressTo = async (challengeIndex) => {
  * @function
  * @returns {string} code written by candidate
  */
-const getCode = () => {
-  let codebase = editor && editor.getValue();
-  if (!codebase) {
-    const { code } = JSON.parse(localStorage.getItem('work'));
-    codebase = code;
-  }
-  return codebase;
-};
+const getCode = async () => editor.getValue();
 
 const initOrResetProjectWork = async ({isReset, started, challengeIndex, displayName, completedChallenge = -1}) => {
   let status = {challengeIndex, completedChallenge};
@@ -385,9 +378,10 @@ const initProject = async () => {
     aName = appUser.displayName.split(/\s+/);
   }
 
-  initOrResetProjectWork({ started, challengeIndex, displayName:aName.join(' ') });
+  await initOrResetProjectWork({ started, challengeIndex, displayName:aName.join(' ') });
   
   progressTo(challengeIndex);
+  editor.updateOptions({readOnly: false});
   notify(`Yo, you can now begin the assessment. Take it away ${aName[0]}!`);
   rAF({ wait: 500 }).then(() => {
     select('body').classList.remove('mdc-dialog-scroll-lock', 'mdc-dialog--open');

@@ -1,4 +1,4 @@
-const swVersion = 1.33;
+const swVersion = 1.37;
 const appName = 'gradr';
 const appCache = `${appName}-static-v${swVersion}`;
 const allCaches = [appCache];

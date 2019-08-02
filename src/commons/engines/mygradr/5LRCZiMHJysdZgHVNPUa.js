@@ -1209,7 +1209,9 @@ const challengeFour = {
           return validity === false ? (isValid === validity && field.classList.contains('is-invalid')) : (isValid === validity);
         };
 
-        return checkDate({date: '10/20', validity: true})
+        const date = new Date();
+        const nextYr = `${date.getFullYear() + 1}`.substring(2);
+        return checkDate({date: `${date.getMonth()}/${nextYr}`, validity: true})
           && checkDate({date: '10/18', validity: false})
           && checkDate({date: '1/10/2019', validity: false})
           && checkDate({date: '10/1/2020', validity: false})
@@ -1257,7 +1259,7 @@ const challengeFour = {
       if(navigator.serviceWorker && navigator.serviceWorker.controller) {
         const callReturned = async ({data}) => {
           const {type, apiResponse} = data;
-          if('api-returned' === type && apiResponse) {
+          if(type === 'api-returned' && apiResponse) {
             setTimeout(() => {
               checkAppState(apiResponse);
               resolve(payload);
@@ -1269,7 +1271,7 @@ const challengeFour = {
           once: true
         });
       } else {
-        console.warn('No SW, manually checking API response handling ...');
+        console.warn('No SW, manually checking API response ...');
         setTimeout(() => {
           const response = {
             results: [{
@@ -1285,10 +1287,13 @@ const challengeFour = {
               }]
             }]
           };
-          displayCartTotal(response);
+
+          const fn = displayCartTotal || noop;
+          fn(response);
           checkAppState(response);
+
           resolve(payload);
-        }, 2000);
+        }, 3500);
       }
 
     });

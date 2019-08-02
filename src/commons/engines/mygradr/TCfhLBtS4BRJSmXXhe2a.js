@@ -120,9 +120,7 @@ const challengeOne = {
       }
 
       const btn = select('[data-pay-btn].mdc-button');
-      if (
-        !btn || trim(btn.textContent) !== 'Pay Now'
-      ) {
+      if (!btn || trim(btn.textContent) !== 'Pay Now') {
         haltWithFeedback(
           `As specified, create a BUTTON with a "data-pay-btn" attribute and the required content. See instructions`
         );
@@ -264,6 +262,21 @@ const challengeTwo = {
       const { script } = payload;
       const haltWithFeedback = deferAuditHaltWith(reject);
 
+      const usesOnlySelectorAPI = async ({ ast, astq }) => {
+        try {
+          const query = `
+            // CallExpression /:callee MemberExpression [
+                /:property Identifier [@name == 'getElementById'] ||
+                /:property Identifier [@name == 'getElementsByName'] ||
+                /:property Identifier [@name == 'getElementsByTagName']
+            ]
+          `;
+
+          const [node] = astq.query(ast, query);
+          return node === undefined;
+        } catch (queryError) {}
+      };
+
       const declaresAppStateObject = createAudit(queryExpressionDeclaration, {
         name: 'appState',
         exprType: 'ObjectExpression'
@@ -279,19 +292,13 @@ const challengeTwo = {
         params: ['first4Digits']
       });
 
-      const declaresValidateCardExpiryDateFn = createAudit(
-        queryNamedArrowFnHasParams,
-        {
-          name: 'validateCardExpiryDate'
-        }
-      );
+      const declaresValidateCardExpiryDateFn = createAudit(queryArrowFunction, {
+        name: 'validateCardExpiryDate'
+      });
 
-      const declaresValidateCardHolderNameFn = createAudit(
-        queryNamedArrowFnHasParams,
-        {
-          name: 'validateCardHolderName'
-        }
-      );
+      const declaresValidateCardHolderNameFn = createAudit(queryArrowFunction, {
+        name: 'validateCardHolderName'
+      });
 
       const declaresUiCanInteractFn = createAudit(queryArrowFunction, {
         name: 'uiCanInteract'
@@ -363,6 +370,14 @@ const challengeTwo = {
         audit(declaresDisplayCartTotalFn).and(
           haltWithFeedback(
             `You have not declared "displayCartTotal" as specified. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(usesOnlySelectorAPI).and(
+          haltWithFeedback(
+            `You seem to be using at least one form of the "getElement...." DOM APIs. You are required to only use the Selector API`
           )
         )
       );
@@ -706,9 +721,105 @@ const challengeThree = {
   stepOne (payload) {
     return new Promise(async (resolve, reject) => {
       const { script } = payload;
-      const haltWithFeedback = haltAuditWith(reject);
+      const haltWithFeedback = deferAuditHaltWith(reject);
 
-      haltWithFeedback('Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.');
+      const flagIfInvalidFn = createAudit(queryNamedArrowFnHasParams, {
+        name: 'flagIfInvalid',
+        params: ['field', 'isValid']
+      });
+
+      const expiryDateFormatIsValidFn = createAudit(
+        queryNamedArrowFnHasParams,
+        {
+          name: 'expiryDateFormatIsValid',
+          params: ['field']
+        }
+      );
+
+      const expiryDateValidatorDelegatesAndReturns = async ({ ast, astq }) => {
+        try {
+          const query = `
+            //VariableDeclaration [
+              @kind == 'const' &&
+                /:declarations VariableDeclarator [
+                  /:id Identifier [@name == 'validateCardExpiryDate'] 
+                  && /:init ArrowFunctionExpression [
+                      /:body BlockStatement [
+                        // CallExpression /:callee Identifier [@name == 'expiryDateFormatIsValid'] 
+                        && // CallExpression [
+                          /:callee Identifier [@name == 'flagIfInvalid'] 
+                        ]
+                        && // ReturnStatement
+                    ]
+                ]
+              ]
+            ]
+          `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const nameValidatorDelegatesAndReturns = async ({ ast, astq }) => {
+        try {
+          const query = `
+            //VariableDeclaration [
+              @kind == 'const' &&
+                /:declarations VariableDeclarator [
+                  /:id Identifier [@name == 'validateCardHolderName'] 
+                  && /:init ArrowFunctionExpression [
+                      /:body BlockStatement [
+                        // CallExpression [
+                          /:callee Identifier [@name == 'flagIfInvalid'] 
+                        ]
+                        && // ReturnStatement
+                    ]
+                ]
+              ]
+            ]
+          `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const tests = [];
+      tests.push(
+        audit(flagIfInvalidFn).and(
+          haltWithFeedback(
+            `You need to create a "flagIfInvalid" function with certain parameters. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(expiryDateFormatIsValidFn).and(
+          haltWithFeedback(
+            `You need to create a "expiryDateFormatIsValid" function with certain parameters. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(expiryDateValidatorDelegatesAndReturns).and(
+          haltWithFeedback(
+            `Your "validateCardExpiryDate" function does not delegate to the specified functions and then return a value. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(nameValidatorDelegatesAndReturns).and(
+          haltWithFeedback(
+            `Your "validateCardHolderName" function does not delegate to the specified functions and then return a value. See instructions`
+          )
+        )
+      );
+
+      const testSuite = chain(...tests);
+      await auditJavascript(script, testSuite);
 
       resolve(payload);
     });
@@ -716,23 +827,266 @@ const challengeThree = {
 
   stepTwo (payload) {
     return new Promise(async (resolve, reject) => {
-        const { script } = payload;
-        const haltWithFeedback = haltAuditWith(reject);
+      const { script } = payload;
+      const haltWithFeedback = deferAuditHaltWith(reject);
 
-        haltWithFeedback('Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.');
-  
-        resolve(payload);
+      const declaresValidateCardNumberFn = createAudit(queryArrowFunction, {
+        name: 'validateCardNumber'
+      });
+
+      const declaresValidatePaymentFn = createAudit(queryArrowFunction, {
+        name: 'validatePayment'
+      });
+
+      const validatePaymentDelegatesCorrectly = async ({ ast, astq }) => {
+        try {
+          const query = `
+              //VariableDeclaration [
+                @kind == 'const' &&
+                  /:declarations VariableDeclarator [
+                    /:id Identifier [@name == 'validatePayment'] 
+                    && /:init ArrowFunctionExpression [
+                        /:body BlockStatement [
+                          // CallExpression [
+                            /:callee Identifier [@name == 'validateCardNumber']
+                          ] &&
+                          
+                          // CallExpression [
+                            /:callee Identifier [@name == 'validateCardHolderName']
+                          ] &&
+                          
+                          // CallExpression [
+                            /:callee Identifier [@name == 'validateCardExpiryDate']
+                          ]
+                        ]
+                  ]
+                ]
+              ]
+            `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const declaresAcceptCardNumbersFn = createAudit(
+        queryNamedArrowFnHasParams,
+        {
+          name: 'acceptCardNumbers',
+          params: ['event', 'fieldIndex']
+        }
+      );
+
+      const uiCanInteractHasEventListener = createAudit(
+        queryNamedArrowFnAddsEventsListener,
+        {
+          name: 'uiCanInteract',
+          events: [
+            { type: 'click', handler: 'validatePayment' }
+          ]
+        }
+      );
+
+      const uiCanInteractHasSetsFocusAndCallsBillHype = async ({ ast, astq }) => {
+        try {
+          const query = `
+              //VariableDeclaration [
+                @kind == 'const' &&
+                  /:declarations VariableDeclarator [
+                    /:id Identifier [@name == 'uiCanInteract'] 
+                    && /:init ArrowFunctionExpression [
+                        /:body BlockStatement [
+                          // CallExpression [
+                            /:callee MemberExpression [
+                              /:property Identifier [@name == 'focus']
+                            ] 
+                          ] &&
+                          
+                          // CallExpression [
+                            /:callee Identifier [@name == 'billHype']
+                          ] 
+                        ]
+                  ]
+                ]
+              ]
+            `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const tests = [];
+
+      tests.push(
+        audit(declaresValidateCardNumberFn).and(
+          haltWithFeedback(
+            `You need to declare a "validateCardNumber" function as specified. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(declaresValidatePaymentFn).and(
+          haltWithFeedback(
+            `You need to declare a "validatePayment" function as specified. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(validatePaymentDelegatesCorrectly).and(
+          haltWithFeedback(
+            `Your "validatePayment" function needs to make calls to a number of other functions. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(declaresAcceptCardNumbersFn).and(
+          haltWithFeedback(
+            `You need to declare a "acceptCardNumbers" function as specified. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(uiCanInteractHasEventListener).and(
+          haltWithFeedback(
+            `Your "uiCanInteract" function needs to set a click listener on the BUTTON element. See instructions`
+          )
+        )
+      );
+
+      tests.push(
+        audit(uiCanInteractHasSetsFocusAndCallsBillHype).and(
+          haltWithFeedback(
+            `Your "uiCanInteract" function needs to set focus on a UI element, and then call "billHype". See instructions`
+          )
+        )
+      );
+
+      const testSuite = chain(...tests);
+      await auditJavascript(script, testSuite);
+
+      resolve(payload);
     });
   },
 
   stepThree (payload) {
     return new Promise(async (resolve, reject) => {
-        const { script } = payload;
-        const haltWithFeedback = haltAuditWith(reject);
+      const { script } = payload;
+      const haltWithFeedback = haltAuditWith(reject);
 
-        haltWithFeedback('Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.');
-  
-        resolve(payload);
+      const calculateBill=([t])=>{const{itemsInCart:c}=t;return c.reduce((t,{price:c,qty:e})=>t+c*e,0)};
+      const formatBill=(c,r)=>{const n=countries.find(c=>c.country===r)||countries[0];return c.toLocaleString(`en-${n.code}`,{style:"currency",currency:n.currency})};
+
+      const checkCardExpiryDate = () => {
+        const checkDate = ({date, validity}) => {
+          let field = select('[data-cc-info] input:nth-child(2)');
+          const value = field.value;
+
+          field.value = date;
+          field.setAttribute('value', date);
+          const fn = validateCardExpiryDate || noop;
+          const isValid = fn();
+
+          field = select('[data-cc-info] input:nth-child(2)');
+          field.value = value;
+          field.setAttribute('value', value);
+
+          return validity === false ? (isValid === validity && field.classList.contains('is-invalid')) : (isValid === validity);
+        };
+
+        const date = new Date();
+        const nextYr = `${date.getFullYear() + 1}`.substring(2);
+        return checkDate({date: `${date.getMonth()}/${nextYr}`, validity: true})
+          && checkDate({date: '10/18', validity: false})
+          && checkDate({date: '1/10/2019', validity: false})
+          && checkDate({date: '10/1/2020', validity: false})
+      };
+
+      const checkCardHolderName = () => {
+        const checkName = ({name, validity}) => {
+          let field = select('[data-cc-info] input:nth-child(1)');
+          const value = field.value;
+
+          field.value = name;
+          field.setAttribute('value', name);
+          const fn = validateCardHolderName || noop;
+          const isValid = fn();
+
+          field = select('[data-cc-info] input:nth-child(1)');
+          field.value = value;
+          field.setAttribute('value', value);
+
+          return validity === false ? (isValid === validity && field.classList.contains('is-invalid')) : (isValid === validity);
+        };
+
+        return checkName({name: 'Odili Charles', validity: true})
+          && checkName({name: 'Odili', validity: false})
+          && checkName({name: 'Odili C', validity: false})
+          && checkName({name: 'Odili Charles Opute', validity: false})
+      };
+
+      const checkAppState = ({results}) => {
+        if(appState.bill !== calculateBill(results)) {
+          haltWithFeedback(`You are not currectly calculating the user's total bill. See instructions and review your code`);
+        }
+
+        if(appState.billFormatted !== formatBill(appState.bill, appState.country)) {
+          haltWithFeedback(`You are not currectly formatting the user's total bill. See instructions and review your code`);
+        }
+
+        if(!checkCardHolderName()) {
+          haltWithFeedback(`You are not correctly validating the card holder's name and marking incorrect entries as invalid?`);
+        }
+
+        if(!checkCardExpiryDate()) {
+          haltWithFeedback(`You are not correctly validating the card's expiry date and marking incorrect entries as invalid?`);
+        }
+      };
+
+      if(navigator.serviceWorker && navigator.serviceWorker.controller) {
+        const callReturned = async ({data}) => {
+          const {type, apiResponse} = data;
+          if(type === 'api-returned' && apiResponse) {
+            setTimeout(() => {
+              checkAppState(apiResponse);
+              resolve(payload);
+            }, 500);
+          }
+        };
+
+        navigator.serviceWorker.addEventListener('message', callReturned, {
+          once: true
+        });
+      } else {
+        console.warn('No SW, manually checking API response ...');
+        setTimeout(() => {
+          const response = {
+            results: [{
+              buyerCountry: 'Nigeria',
+              itemsInCart: [{
+                name: 'Matooke',
+                price: 136,
+                qty: 1
+              }, {
+                name: 'Nyama Choma',
+                price: 135,
+                qty: 3
+              }]
+            }]
+          };
+
+          const fn = displayCartTotal || noop;
+          fn(response);
+          checkAppState(response);
+
+          resolve(payload);
+        }, 3500);
+      }
+      
     });
   }
 };
@@ -741,34 +1095,40 @@ challenges.push(challengeThree);
 const challengeFour = {
   stepOne (payload) {
     return new Promise(async (resolve, reject) => {
-        const { script } = payload;
-        const haltWithFeedback = haltAuditWith(reject);
+      const { script } = payload;
+      const haltWithFeedback = haltAuditWith(reject);
 
-        haltWithFeedback('Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.');
-  
-        resolve(payload);
+      haltWithFeedback(
+        'Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.'
+      );
+
+      resolve(payload);
     });
   },
 
   stepTwo (payload) {
     return new Promise(async (resolve, reject) => {
-        const { script } = payload;
-        const haltWithFeedback = haltAuditWith(reject);
+      const { script } = payload;
+      const haltWithFeedback = haltAuditWith(reject);
 
-        haltWithFeedback('Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.');
-  
-        resolve(payload);
+      haltWithFeedback(
+        'Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.'
+      );
+
+      resolve(payload);
     });
   },
 
   stepThree (payload) {
     return new Promise(async (resolve, reject) => {
-        const { script } = payload;
-        const haltWithFeedback = haltAuditWith(reject);
+      const { script } = payload;
+      const haltWithFeedback = haltAuditWith(reject);
 
-        haltWithFeedback('Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.');
-  
-        resolve(payload);
+      haltWithFeedback(
+        'Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.'
+      );
+
+      resolve(payload);
     });
   }
 };
@@ -781,5 +1141,3 @@ const audits = challenges.reduce((pool, challenge, index) => {
 }, []);
 
 const gradr = asyncChain(...audits);
-
-
