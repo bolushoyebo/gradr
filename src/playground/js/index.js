@@ -218,13 +218,12 @@ const takeOff = async () => {
 
     if(navigator.serviceWorker) {
       if(process.env.NODE_ENV === 'development') {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          registrations.forEach(registration => registration.unregister());
-        });
-      } else {
-        const swURL = `${window.location.origin}/sw.js`;
-        navigator.serviceWorker.register(swURL);
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        registrations.forEach(registration => registration.unregister());
       }
+
+      const swURL = `${window.location.origin}/sw.js`;
+      navigator.serviceWorker.register(swURL);
     }
   }
 };

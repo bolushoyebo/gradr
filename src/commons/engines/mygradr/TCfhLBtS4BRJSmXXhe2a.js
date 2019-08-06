@@ -869,25 +869,23 @@ const challengeThree = {
         } catch (queryError) {}
       };
 
-      const declaresAcceptCardNumbersFn = createAudit(
-        queryNamedArrowFnHasParams,
-        {
-          name: 'acceptCardNumbers',
-          params: ['event', 'fieldIndex']
-        }
-      );
+      const declaresSmartInputFn = createAudit(queryNamedArrowFnHasParams, {
+        name: 'smartInput',
+        params: ['event', 'fieldIndex']
+      });
 
       const uiCanInteractHasEventListener = createAudit(
         queryNamedArrowFnAddsEventsListener,
         {
           name: 'uiCanInteract',
-          events: [
-            { type: 'click', handler: 'validatePayment' }
-          ]
+          events: [{ type: 'click', handler: 'validatePayment' }]
         }
       );
 
-      const uiCanInteractHasSetsFocusAndCallsBillHype = async ({ ast, astq }) => {
+      const uiCanInteractHasSetsFocusAndCallsBillHype = async ({
+        ast,
+        astq
+      }) => {
         try {
           const query = `
               //VariableDeclaration [
@@ -943,9 +941,9 @@ const challengeThree = {
       );
 
       tests.push(
-        audit(declaresAcceptCardNumbersFn).and(
+        audit(declaresSmartInputFn).and(
           haltWithFeedback(
-            `You need to declare a "acceptCardNumbers" function as specified. See instructions`
+            `You need to declare a "smartInput" function as specified. See instructions`
           )
         )
       );
@@ -978,11 +976,20 @@ const challengeThree = {
       const { script } = payload;
       const haltWithFeedback = haltAuditWith(reject);
 
-      const calculateBill=([t])=>{const{itemsInCart:c}=t;return c.reduce((t,{price:c,qty:e})=>t+c*e,0)};
-      const formatBill=(c,r)=>{const n=countries.find(c=>c.country===r)||countries[0];return c.toLocaleString(`en-${n.code}`,{style:"currency",currency:n.currency})};
+      const calculateBill = ([t]) => {
+        const { itemsInCart: c } = t;
+        return c.reduce((t, { price: c, qty: e }) => t + c * e, 0);
+      };
+      const formatBill = (c, r) => {
+        const n = countries.find(c => c.country === r) || countries[0];
+        return c.toLocaleString(`en-${n.code}`, {
+          style: 'currency',
+          currency: n.currency
+        });
+      };
 
       const checkCardExpiryDate = () => {
-        const checkDate = ({date, validity}) => {
+        const checkDate = ({ date, validity }) => {
           let field = select('[data-cc-info] input:nth-child(2)');
           const value = field.value;
 
@@ -995,19 +1002,26 @@ const challengeThree = {
           field.value = value;
           field.setAttribute('value', value);
 
-          return validity === false ? (isValid === validity && field.classList.contains('is-invalid')) : (isValid === validity);
+          return validity === false
+            ? isValid === validity && field.classList.contains('is-invalid')
+            : isValid === validity;
         };
 
         const date = new Date();
         const nextYr = `${date.getFullYear() + 1}`.substring(2);
-        return checkDate({date: `${date.getMonth()}/${nextYr}`, validity: true})
-          && checkDate({date: '10/18', validity: false})
-          && checkDate({date: '1/10/2019', validity: false})
-          && checkDate({date: '10/1/2020', validity: false})
+        const month = date.getMonth();
+        const monthPadded = month < 10 ? `0${month}` : `10`;
+        return (
+          checkDate({ date: `${month}/${nextYr}`, validity: true }) &&
+          checkDate({ date: `${monthPadded}/${nextYr}`, validity: true }) &&
+          checkDate({ date: '10/18', validity: false }) &&
+          checkDate({ date: '1/10/2019', validity: false }) &&
+          checkDate({ date: '10/1/2020', validity: false })
+        );
       };
 
       const checkCardHolderName = () => {
-        const checkName = ({name, validity}) => {
+        const checkName = ({ name, validity }) => {
           let field = select('[data-cc-info] input:nth-child(1)');
           const value = field.value;
 
@@ -1020,37 +1034,53 @@ const challengeThree = {
           field.value = value;
           field.setAttribute('value', value);
 
-          return validity === false ? (isValid === validity && field.classList.contains('is-invalid')) : (isValid === validity);
+          return validity === false
+            ? isValid === validity && field.classList.contains('is-invalid')
+            : isValid === validity;
         };
 
-        return checkName({name: 'Odili Charles', validity: true})
-          && checkName({name: 'Odili', validity: false})
-          && checkName({name: 'Odili C', validity: false})
-          && checkName({name: 'Odili Charles Opute', validity: false})
+        return (
+          checkName({ name: 'Odili Charles', validity: true }) &&
+          checkName({ name: 'Odili', validity: false }) &&
+          checkName({ name: 'Odili C', validity: false }) &&
+          checkName({ name: 'Odili Charles Opute', validity: false })
+        );
       };
 
-      const checkAppState = ({results}) => {
-        if(appState.bill !== calculateBill(results)) {
-          haltWithFeedback(`You are not currectly calculating the user's total bill. See instructions and review your code`);
+      const checkAppState = ({ results }) => {
+        const theAppState = appState || {};
+        if (theAppState.bill !== calculateBill(results)) {
+          haltWithFeedback(
+            `You are not correctly calculating the user's total bill. See instructions and review your code`
+          );
         }
 
-        if(appState.billFormatted !== formatBill(appState.bill, appState.country)) {
-          haltWithFeedback(`You are not currectly formatting the user's total bill. See instructions and review your code`);
+        if (
+          theAppState.billFormatted !==
+          formatBill(theAppState.bill, theAppState.country)
+        ) {
+          haltWithFeedback(
+            `You are not correctly formatting the user's total bill with the "formatAsMoney" function. See instructions and review your code`
+          );
         }
 
-        if(!checkCardHolderName()) {
-          haltWithFeedback(`You are not correctly validating the card holder's name and marking incorrect entries as invalid?`);
+        if (!checkCardHolderName()) {
+          haltWithFeedback(
+            `You are not correctly validating the card holder's name and marking incorrect entries as invalid?`
+          );
         }
 
-        if(!checkCardExpiryDate()) {
-          haltWithFeedback(`You are not correctly validating the card's expiry date and marking incorrect entries as invalid?`);
+        if (!checkCardExpiryDate()) {
+          haltWithFeedback(
+            `You are not correctly validating the card's expiry date and marking incorrect entries as invalid?`
+          );
         }
       };
 
-      if(navigator.serviceWorker && navigator.serviceWorker.controller) {
-        const callReturned = async ({data}) => {
-          const {type, apiResponse} = data;
-          if(type === 'api-returned' && apiResponse) {
+      if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        const callReturned = async ({ data }) => {
+          const { type, apiResponse } = data;
+          if (type === 'api-returned' && apiResponse) {
             setTimeout(() => {
               checkAppState(apiResponse);
               resolve(payload);
@@ -1065,18 +1095,23 @@ const challengeThree = {
         console.warn('No SW, manually checking API response ...');
         setTimeout(() => {
           const response = {
-            results: [{
-              buyerCountry: 'Nigeria',
-              itemsInCart: [{
-                name: 'Matooke',
-                price: 136,
-                qty: 1
-              }, {
-                name: 'Nyama Choma',
-                price: 135,
-                qty: 3
-              }]
-            }]
+            results: [
+              {
+                buyerCountry: 'Nigeria',
+                itemsInCart: [
+                  {
+                    name: 'Matooke',
+                    price: 136,
+                    qty: 1
+                  },
+                  {
+                    name: 'Nyama Choma',
+                    price: 135,
+                    qty: 3
+                  }
+                ]
+              }
+            ]
           };
 
           const fn = displayCartTotal || noop;
@@ -1084,9 +1119,8 @@ const challengeThree = {
           checkAppState(response);
 
           resolve(payload);
-        }, 3500);
+        }, 1000);
       }
-      
     });
   }
 };
@@ -1096,11 +1130,123 @@ const challengeFour = {
   stepOne (payload) {
     return new Promise(async (resolve, reject) => {
       const { script } = payload;
-      const haltWithFeedback = haltAuditWith(reject);
+      const haltWithFeedback = deferAuditHaltWith(reject);
 
-      haltWithFeedback(
-        'Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.'
+      const declaresSmartCursorFn = createAudit(queryNamedArrowFnHasParams, {
+        name: 'smartCursor',
+        params: ['event', 'fieldIndex', 'fields']
+      });
+
+      const declaresEnableSmartTypingFn = createAudit(queryArrowFunction, {
+        name: 'enableSmartTyping'
+      });
+
+      const uiCanInteractCallsEnableSmartTypingFn = async ({ ast, astq }) => {
+        try {
+          const query = `
+              //VariableDeclaration [
+                @kind == 'const' &&
+                  /:declarations VariableDeclarator [
+                    /:id Identifier [@name == 'uiCanInteract'] 
+                    && /:init ArrowFunctionExpression [
+                        /:body BlockStatement [
+                          // CallExpression [
+                            /:callee Identifier [@name == 'enableSmartTyping']
+                          ] 
+                        ]
+                  ]
+                ]
+              ]
+            `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const enableSmartTypingSetsListener = async ({ ast, astq }) => {
+        try {
+          const query = `
+              //VariableDeclaration [
+                @kind == 'const' &&
+                  /:declarations VariableDeclarator [
+                    /:id Identifier [@name == 'enableSmartTyping'] 
+                    && /:init ArrowFunctionExpression [
+                        /:body BlockStatement [
+                          // CallExpression [
+                            /:callee MemberExpression [
+                              /:property Identifier [@name == 'forEach']
+                            ] &&
+                                
+                              /:arguments ArrowFunctionExpression [
+                  /:params Identifier [@name == 'field'] &&
+                                  /:params Identifier [@name == 'index'] &&
+                  /:params Identifier [@name == 'fields'] &&
+                                  /:body BlockStatement [
+                    // CallExpression [
+                      /:callee MemberExpression [
+                                            /:property Identifier [@name == 'addEventListener']
+                                          ] &&
+                                          /:arguments Literal [@value == 'keydown'] &&
+                      /:arguments ArrowFunctionExpression [
+                                            // CallExpression [
+                                                /:callee Identifier [@name == 'smartInput'] &&
+                                                /:arguments Identifier [@name == 'event'] &&
+                                          /:arguments Identifier [@name == 'index'] &&
+                          /:arguments Identifier [@name == 'fields']
+                                            ]
+                                          ]
+                    ]
+                  ]
+                ]
+                          ]
+                        ]
+                  ]
+                ]
+              ]
+            `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const tests = [];
+
+      tests.push(
+        audit(declaresSmartCursorFn).and(
+          haltWithFeedback(
+            'You have not created the "smartCursor" function as specified. See intructions'
+          )
+        )
       );
+
+      tests.push(
+        audit(declaresEnableSmartTypingFn).and(
+          haltWithFeedback(
+            'You have not created the "enableSmartTyping" function as specified. See intructions'
+          )
+        )
+      );
+
+      tests.push(
+        audit(uiCanInteractCallsEnableSmartTypingFn).and(
+          haltWithFeedback(
+            'As specified, make sure you are calling the "enableSmartTyping" function from within uiCanInteract. '
+          )
+        )
+      );
+
+      tests.push(
+        audit(enableSmartTypingSetsListener).and(
+          haltWithFeedback(
+            `As specified, make sure you are iterating over the input fields and calling "smartInput" from a "keydown" listener, and using the right parameters. See instructions `
+          )
+        )
+      );
+
+      const testSuite = chain(...tests);
+      await auditJavascript(script, testSuite);
 
       resolve(payload);
     });
@@ -1109,11 +1255,129 @@ const challengeFour = {
   stepTwo (payload) {
     return new Promise(async (resolve, reject) => {
       const { script } = payload;
-      const haltWithFeedback = haltAuditWith(reject);
+      const haltWithFeedback = deferAuditHaltWith(reject);
 
-      haltWithFeedback(
-        'Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.'
+      const blocksInvalidInput = async () => {
+        const ccFields = [...selectAll('[data-cc-digits] input')];
+
+        const ccStatus = ccFields.reduce((status, f) => {
+          f.dispatchEvent(new KeyboardEvent('keydown',{'key':'g'}));
+          const chk1 = f.value === '';
+
+          f.dispatchEvent(new KeyboardEvent('keydown',{'key':'?'}));
+          const chk2 = f.value === '';
+
+          return chk1 && chk2;
+        }, []);
+
+        const nameField = select('[data-cc-info] input:nth-child(1)');
+        const nameStatus = [4, '?'].reduce((status, value) => {
+          nameField.dispatchEvent(new KeyboardEvent('keydown',{'key':value}));
+          const chk1 = nameField.value === '';
+
+          nameField.dispatchEvent(new KeyboardEvent('keydown',{'key':value}));
+          const chk2 = nameField.value === '';
+
+          return chk1 && chk2;
+        }, []);
+
+        const dateField = select('[data-cc-info] input:nth-child(2)');
+        const dateStatus = ['y', '?'].reduce((status, value) => {
+          dateField.dispatchEvent(new KeyboardEvent('keydown',{'key':value}));
+          const chk1 = dateField.value === '';
+
+          dateField.dispatchEvent(new KeyboardEvent('keydown',{'key':value}));
+          const chk2 = dateField.value === '';
+
+          return chk1 && chk2;
+        }, []);
+
+        return ccStatus && nameStatus && dateStatus;
+      };
+
+      const savesAndMasksCCsThenMovesCursor = async () => {
+        const ccFields = [...selectAll('[data-cc-digits] input')];
+        let cardDigits =  appState && appState.cardDigits ? appState.cardDigits : [];
+        const savedCardDigits = [...cardDigits];
+
+        const nums = ['4556', '3725'];
+        const savesDigits = await nums.reduce(async (prevTask, num, index) => {
+          const status = await prevTask;
+
+          let cc = num.split('');
+
+          const typeNums = () => new Promise(done => {
+            const typeIt = () => {
+              const [key] = cc;
+              ccFields[index].dispatchEvent(new KeyboardEvent('keydown', {key}));
+              cc = cc.splice(1);
+
+              if(cc.length <= 0) {
+                done();
+              } else {
+                setTimeout(typeIt, 500);
+              }
+            };
+
+            typeIt();
+          });
+
+          await typeNums();
+          const slot = cardDigits[index];
+          return status && Array.isArray(slot) && `${slot.join('')}` === `${num}`;
+
+        }, Promise.resolve(true));
+
+        const [first, second] = [...selectAll('[data-cc-digits] input')];
+
+        const checkMasking = () => new Promise(done => {
+          setTimeout(() => {
+            const masked = [first, second].filter(
+              f => f.value && /^[#$%]+$/.test(f.value)
+            ).length === 2;
+            done(masked);
+          }, 2000);
+        });
+
+        const checkFocusPosition = () => new Promise(done => {
+          setTimeout(() => {
+            let focusIndex = -1;
+            ccFields.forEach((f, i) => {
+              if(f.matches('input:focus')) focusIndex = i;
+            });
+            done(focusIndex);
+          }, 2000);
+        });
+
+        const masksDigits = await checkMasking();
+        // const focusIndex = await checkFocusPosition();
+        
+      
+        [first, second].forEach(f => {f.value = '';});
+        cardDigits = savedCardDigits;
+
+        return savesDigits && masksDigits /*&& focusIndex === 2;*/
+      };
+
+      const tests = [];
+      tests.push(
+        audit(blocksInvalidInput).and(
+          haltWithFeedback(
+            `Something's not right! "smartInput" needs more tricks to identify and reject invalid entries. See instructions`
+          )
+        )
       );
+
+      tests.push(
+        audit(savesAndMasksCCsThenMovesCursor).and(
+          haltWithFeedback(
+            `Something's not right! Your "smartInput" is not properly saving valid entries into "appState", masking them, or moveing the cursor as specified. See intructions`
+          )
+        )
+      );
+
+      const testSuite = chain(...tests);
+      await auditJavascript(script, testSuite);
 
       resolve(payload);
     });
@@ -1122,11 +1386,213 @@ const challengeFour = {
   stepThree (payload) {
     return new Promise(async (resolve, reject) => {
       const { script } = payload;
-      const haltWithFeedback = haltAuditWith(reject);
+      const haltWithFeedback = deferAuditHaltWith(reject);
 
-      haltWithFeedback(
-        'Keep impplementing your solution following the instructions. Grading of this challenge will be shipping soon.'
+      const smartInputCallsDetectCardType = async ({ ast, astq }) => {
+        try {
+          const query = `
+            //VariableDeclaration [
+              @kind == 'const' &&
+                /:declarations VariableDeclarator [
+                  /:id Identifier [@name == 'smartInput'] 
+                  && /:init ArrowFunctionExpression [
+                      /:body BlockStatement [
+                        // CallExpression [
+                          /:callee Identifier [@name == 'detectCardType'] &&
+                          /:arguments Identifier 
+                        ]
+                      ]
+                  ]
+              ]
+            ]    
+          `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const detectsCardTypeAndSetsImage = async ({ ast, astq }) => {
+        try {
+          const query = `
+            //VariableDeclaration [
+              @kind == 'const' &&
+                /:declarations VariableDeclarator [
+                  /:id Identifier [@name == 'detectCardType'] 
+                  && /:init ArrowFunctionExpression [
+                      /:body BlockStatement [
+                        // AssignmentExpression 
+                          /:left MemberExpression 
+                          /:property Identifier [@name == 'src']
+                      ]
+                 ]
+              ]
+            ]
+          `;
+
+          const [node] = astq.query(ast, query);
+          if (node !== undefined) {
+            const logo = select('[data-card-type]');
+            const currentSrc = logo.src;
+
+            const cards = {
+              'is-visa':
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAABkCAYAAAD32uk+AAAACXBIWXMAAAsTAAALEwEAmpwYAABO',
+              'is-mastercard':
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKoAAABkCAYAAAAWlKtGAAABfGlDQ1BJQ0MgUHJvZmlsZQAAKJGlkL9LQlEUx79qYZThkENDw4OkITTMltpSBykcxAyyWt67Pn+APi'
+            };
+
+            let cardCmpCls = '';
+            const cardCmp = select('[data-credit-card]');
+            if (cardCmp.classList.contains('is-visa')) cardCmpCls = 'is-visa';
+            if (cardCmp.classList.contains('is-mastercard')) { cardCmpCls = 'is-mastercard'; }
+
+            const checkCard = (cardType, firstFourDigits) => {
+              const type = detectCardType(firstFourDigits);
+              const logoSrc = select('[data-card-type]').src;
+
+              return type === ''
+                ? false
+                : cardType === type &&
+                    logoSrc.startsWith(cards[type]) &&
+                    select('[data-credit-card]').classList.contains(type);
+            };
+
+            const forVisa = checkCard('is-visa', [4,5,5,6]) && checkCard('is-visa', [4,7,1,6]);
+            const forMstCard = checkCard('is-mastercard', [5,2,5,0]) && checkCard('is-mastercard', [5,3,3,0]);
+
+            logo.src = currentSrc;
+            cardCmp.classList.remove('is-visa', 'is-mastercard');
+            if (cardCmpCls !== '') cardCmp.classList.add(cardCmpCls);
+
+            return forVisa && forMstCard;
+          }
+
+          return false;
+        } catch (queryError) {}
+      };
+
+      const tests = [];
+
+      tests.push(
+        audit(detectsCardTypeAndSetsImage).and(
+          haltWithFeedback(
+            `"detectCardType" is failing as a detective! It can't correctly detect the card type and display the appropriate credit card logo ??`
+          )
+        )
       );
+
+      tests.push(audit(smartInputCallsDetectCardType).and(
+        haltWithFeedback(
+          `"smartInput" needs to make a call to "detectCardType". See instructions`
+        )
+      ));
+
+      const testSuite = chain(...tests);
+      await auditJavascript(script, testSuite);
+
+      resolve(payload);
+    });
+  },
+
+  stepFour (payload) {
+    return new Promise(async (resolve, reject) => {
+      const { script } = payload;
+      const haltWithFeedback = deferAuditHaltWith(reject);
+
+      const validateWithLuhnFn = createAudit(queryArrowFunction, {
+        name: 'validateWithLuhn'
+      });
+
+      const checkLuhnImplementation = () => {
+        const validCCs = [
+          '4556372551434601',
+          '4916337563926287',
+          '4716361721613449',
+          '4539818898404311',
+          '4929416075118388',
+          '5130752529459529',
+          '5250457226640843',
+          '5330664490375584',
+          '5241343263959571',
+          '5250445524664938'
+        ];
+
+        const invalidCCs = [
+          '45563725554346010',
+          '4916339563926287',
+          '471636172421613449',
+          '45398198404311',
+          '4929416775118388',
+          '5130752829459529',
+          '5250457526640843',
+          '3330664490375584',
+          '7241343263959571',
+          '62504455246654938'
+        ];
+
+        const bulkCheck = ccs => ccs.map(cc => {
+          const digits = `${cc}`.split('').map(digit => parseInt(digit, 10));
+          const fn = validateWithLuhn || noop;
+          return fn(digits);
+        });
+
+        return bulkCheck(validCCs).every(validity => validity === true) 
+          && bulkCheck(invalidCCs).every(validity => validity === false)
+      };
+
+      const validateCardNumberFnCallsDelegate = async ({ast, astq}) => {
+        try {
+          const query = `
+            //VariableDeclaration [
+              @kind == 'const' &&
+                /:declarations VariableDeclarator [
+                  /:id Identifier [@name == 'validateCardNumber'] 
+                  && /:init ArrowFunctionExpression [
+                      /:body BlockStatement [
+                        // CallExpression [
+                          /:callee Identifier [@name == 'validateWithLuhn']
+                          && /:arguments Identifier
+                        ]
+                      ]
+                ]
+              ]
+            ]
+          `;
+
+          const [node] = astq.query(ast, query);
+          return node !== undefined;
+        } catch (queryError) {}
+      };
+
+      const tests = [];
+
+      tests.push(
+        audit(validateWithLuhnFn).and(
+          haltWithFeedback(
+            `You need to create a "validateWithLuhn" function that will check if the credit card numbers are valid. See instructions.`
+          )
+        )
+      );
+
+      tests.push(
+        audit(validateCardNumberFnCallsDelegate).and(
+          haltWithFeedback(
+            `Make sure your "validateCardNumber" function is delegating to the "validateWithLuhn" function to do its job. See instructions.`
+          )
+        )
+      );
+
+      tests.push(
+        audit(checkLuhnImplementation).and(
+          haltWithFeedback(
+            `Your "validateWithLuhn" function is not correctly validating card numbers as specified. See instructions.`
+          )
+        )
+      );
+
+      const testSuite = chain(...tests);
+      await auditJavascript(script, testSuite);
 
       resolve(payload);
     });

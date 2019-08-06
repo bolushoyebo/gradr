@@ -36,8 +36,8 @@ window.MonacoEnvironment = {
  */
 const monacoCreate = (MonacoConfig = {}, doc) => monaco.editor.create(doc, {
   value: [
-    'function x() {',
-    '\tconsole.log("Hello world!");',
+    'function hi() {',
+    '\tconsole.log("Hello Gradr!");',
     '}'
   ].join('\n'),
   language: language.javascript,

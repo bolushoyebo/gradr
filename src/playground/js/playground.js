@@ -372,7 +372,8 @@ const initOrResetProjectWork = async ({isReset, started, challengeIndex, display
   }
 
   await updateProjectWork(status);
-  assessmentProgress = {challengeIndex, completedChallenge};
+  // assessmentProgress = {challengeIndex, completedChallenge};
+  await setAssessmentProgress();
   if(!isReset) select('body').setAttribute('data-assessment', started);
 };
 
@@ -473,6 +474,19 @@ const handleChallengeNavClicks = (event) => {
   }
 };
 
+/**
+ * @description fetches the users work and sets
+ * the value of the assessmentProgress variable
+ */
+const setAssessmentProgress = async () => {
+  const existingWork = await SUBMISSIONS.doc(projectId).get();
+  const data = existingWork.data();
+  assessmentProgress = {...assessmentProgress, ...{
+    challengeIndex: data.challengeIndex,
+    completedChallenge: data.completedChallenge 
+  }};
+};
+
 const saveWorkBatched = async () => {
   savingBatchedProgress = true;
   const start = { completedChallenge: -1, challengeIndex: 0 };
@@ -489,9 +503,10 @@ const saveWorkBatched = async () => {
     code: editor.getValue()
   });
 
+  await setAssessmentProgress();
+
   batchedProgress = [];
   savingBatchedProgress = false;
-  assessmentProgress = { ...assessmentProgress, ...performance };
 };
 
 /**
@@ -523,19 +538,6 @@ const saveWork = ({completedChallenge, challengeIndex, silent = false}) => {
     notify(testOverMsg);
   }
 };
-
-/**
- * @description fetches the users work and sets
- * the value of the assessmentProgress variable
- */
-const setAssessmentProgress = async () => {
-  const existingWork = await SUBMISSIONS.doc(projectId).get();
-  const data = existingWork.data();
-  assessmentProgress = {...assessmentProgress, ...{
-    challengeIndex: data.challengeIndex,
-    completedChallenge: data.completedChallenge 
-  }};
-}
 
 /**
  * @description checks whether the user has made changes to the code.
@@ -748,13 +750,17 @@ const proceed = async (project) => {
     if (isWithinDeadline({ endingAt })) {
       if ((whereAmI + 1) >= spec.challenges.length) {
         // though within deadline, this user has completed this assessment. 
-        playCode();
+        notify('Wanna Re-run your code and preview your app? Click the play button!');
         return;
       }
       switchPreviewToInstructions();
-      return;
+      notify('Consult the instructions and code along. Click the play button to see the output and get instant feedback.');
+    } else {
+      // TODO just playback performace
+      // playCode();
+      editor.updateOptions({readOnly: true});
+      notify(`This assessment is closed and will no longer allow code edits. For now, you can click the play button to preview your saved work`);
     }
-    playCode();
   }
 };
 

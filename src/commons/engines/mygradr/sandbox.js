@@ -86,7 +86,7 @@ const runAudits = payload => {
     gradr(payload)
       .then(({ completedChallenge }) => {
         const done = completedChallenge + 1;
-        const msg = `Greate Job Completing Challenge ${done}. Your App Should Be Functional`;
+        const msg = `Greate Job Finishing Challenge ${done}. You have completed this assessment and your performance has been recorded. No further action is required from you. Enjoy your fully functional app!`;
         relay({
           feedback: {
             message: msg,
