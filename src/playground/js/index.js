@@ -40,7 +40,6 @@ const notify = msg => {
 };
 
 const signIn = ({target}) => {
-  console.log(target);
   if(target.hasAttribute('data-gh-auth')) {
     provider = gitHubProvider;
   } else if(target.hasAttribute('data-fb-auth')) {
@@ -243,8 +242,8 @@ const takeOff = async () => {
         registrations.forEach(registration => registration.unregister());
       }
 
-      // const swURL = `${window.location.origin}/sw.js`;
-      // navigator.serviceWorker.register(swURL);
+      const swURL = `${window.location.origin}/sw.js`;
+      navigator.serviceWorker.register(swURL);
     }
   }
 };
