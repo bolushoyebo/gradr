@@ -12,7 +12,7 @@
   <title>Gradr</title>
 
   <link rel="shortcut icon" href="images/favicon.png" />
-  <meta name="theme-color" content="#000000"/>
+  <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="manifest.webmanifest">
 
   <link rel="prefetch" href="./images/apps.svg" as="svg" type="image/svg" />
@@ -22,7 +22,7 @@
 
   <!-- FID Monitor Core -->
   <script>
-    !function(n,e){var t,o,i,c=[],f={passive:!0,capture:!0},r=new Date,a="pointerup",u="pointercancel";function p(n,c){t||(t=c,o=n,i=new Date,w(e),s())}function s(){o>=0&&o<i-r&&(c.forEach(function(n){n(o,t)}),c=[])}function l(t){if(t.cancelable){var o=(t.timeStamp>1e12?new Date:performance.now())-t.timeStamp;"pointerdown"==t.type?function(t,o){function i(){p(t,o),r()}function c(){r()}function r(){e(a,i,f),e(u,c,f)}n(a,i,f),n(u,c,f)}(o,t):p(o,t)}}function w(n){["click","mousedown","keydown","touchstart","pointerdown"].forEach(function(e){n(e,l,f)})}w(n),self.perfMetrics=self.perfMetrics||{},self.perfMetrics.onFirstInputDelay=function(n){c.push(n),s()}}(addEventListener,removeEventListener);
+    !function (n, e) { var t, o, i, c = [], f = { passive: !0, capture: !0 }, r = new Date, a = "pointerup", u = "pointercancel"; function p(n, c) { t || (t = c, o = n, i = new Date, w(e), s()) } function s() { o >= 0 && o < i - r && (c.forEach(function (n) { n(o, t) }), c = []) } function l(t) { if (t.cancelable) { var o = (t.timeStamp > 1e12 ? new Date : performance.now()) - t.timeStamp; "pointerdown" == t.type ? function (t, o) { function i() { p(t, o), r() } function c() { r() } function r() { e(a, i, f), e(u, c, f) } n(a, i, f), n(u, c, f) }(o, t) : p(o, t) } } function w(n) { ["click", "mousedown", "keydown", "touchstart", "pointerdown"].forEach(function (e) { n(e, l, f) }) } w(n), self.perfMetrics = self.perfMetrics || {}, self.perfMetrics.onFirstInputDelay = function (n) { c.push(n), s() } }(addEventListener, removeEventListener);
   </script>
   <script defer src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   <script defer src="https://www.googletagmanager.com/gtag/js?id=UA-143248811-1"></script>
@@ -34,47 +34,60 @@
       <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
         <button id="toggle-viewer" class="mdc-icon-button mdc-icon-button--on" aria-label="preview your work"
           aria-hidden="true" aria-pressed="true">
-            <svg class="mdc-icon-button__icon mdc-icon-button__icon--on" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-            <svg class="mdc-icon-button__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M7 5h10v2h2V3c0-1.1-.9-1.99-2-1.99L7 1c-1.1 0-2 .9-2 2v4h2V5zm8.41 11.59L20 12l-4.59-4.59L14 8.83 17.17 12 14 15.17l1.41 1.42zM10 15.17L6.83 12 10 8.83 8.59 7.41 4 12l4.59 4.59L10 15.17zM17 19H7v-2H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v2z"/></svg>
+          <svg class="mdc-icon-button__icon mdc-icon-button__icon--on" xmlns="http://www.w3.org/2000/svg" width="24"
+            height="24" viewBox="0 0 24 24">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+          <svg class="mdc-icon-button__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+            viewBox="0 0 24 24">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path
+              d="M7 5h10v2h2V3c0-1.1-.9-1.99-2-1.99L7 1c-1.1 0-2 .9-2 2v4h2V5zm8.41 11.59L20 12l-4.59-4.59L14 8.83 17.17 12 14 15.17l1.41 1.42zM10 15.17L6.83 12 10 8.83 8.59 7.41 4 12l4.59 4.59L10 15.17zM17 19H7v-2H5v4c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-4h-2v2z" />
+            </svg>
         </button>
       </section>
       <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-        <button id="runit" class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Run your code"
-          alt="Run your code">
+        <button id="runit" class="material-icons mdc-top-app-bar__action-item mdc-icon-button"
+          aria-label="Run your code" alt="Run your code">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
             <path d="M0 0h24v24H0z" fill="none" />
-            <path
-              fill="#fff"
+            <path fill="#fff"
               d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-            </svg>
-          </button>
+          </svg>
+        </button>
       </section>
     </div>
 
-    <button id="reset-code" class="mdc-icon-button" aria-label="Reset your code to the starter code"
-      aria-hidden="true" aria-pressed="true" title="Reset your code to the starter code">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+    <button id="reset-code" class="mdc-icon-button" aria-label="Reset your code to the starter code" aria-hidden="true"
+      aria-pressed="true" title="Reset your code to the starter code">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path d="M0 0h24v24H0z" fill="none" />
+        <path
+          d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+        </svg>
     </button>
 
-    <div class="mdc-dialog" data-action="reset-dialog"
-      role="alertdialog"
-      aria-modal="true"
-      aria-labelledby="my-dialog-title"
-      aria-describedby="my-dialog-content">
+    <div class="mdc-dialog" data-action="reset-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="my-dialog-title" aria-describedby="my-dialog-content">
       <div class="mdc-dialog__container">
         <div class="mdc-dialog__surface">
           <h2 class="mdc-dialog__title" id="my-dialog-title">
-              Reset Code to Starter Code
+            Reset Code to Starter Code
           </h2>
           <div class="mdc-dialog__content" id="my-dialog-content">
             You will lose all your progress in this challenge.
             Are you sure you want to reset your code?
           </div>
           <footer class="mdc-dialog__actions">
-            <button type="button" class="mdc-button mdc-dialog__button mdc-ripple-upgraded mdc-ripple-upgraded--background-focused" data-mdc-dialog-action="close">
+            <button type="button"
+              class="mdc-button mdc-dialog__button mdc-ripple-upgraded mdc-ripple-upgraded--background-focused"
+              data-mdc-dialog-action="close">
               <span class="mdc-button__label">Cancel</span>
             </button>
-            <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="reset" data-action="reset-confirm">
+            <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="reset"
+              data-action="reset-confirm">
               <span class="mdc-button__label">Reset Code</span>
             </button>
           </footer>
@@ -115,9 +128,15 @@
               With instant code analysis, automatic reviews and actionable feedback, Gradr helps
               developers like you learn by applying knowledge, solving problems, and building real tangible things!
             </p>
-            <button class="mdc-button">
-              <span class="mdc-button__label">Sign In To Begin</span>
+            <button class="mdc-button" data-signin data-gh-auth>
+              Sign In With Github
             </button>
+            <div data-has-fb-auth class="off">
+              <h6>OR</h6>
+              <button class="mdc-button" data-signin data-fb-auth>
+                Sign In With Facebook
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -174,10 +193,7 @@
           <div class="mdc-layout-grid__cell mdc-layout-grid__cell--span-4 output-area-wrapper">
             <div id="viewer">
               <div class="screen">
-                <iframe 
-                  id="sandbox"
-                  frameborder="0" 
-                  sandbox="allow-same-origin allow-scripts"></iframe>
+                <iframe id="sandbox" frameborder="0" sandbox="allow-same-origin allow-scripts"></iframe>
               </div>
             </div>
             <div id="instructions" class="mdc-elevation--z5">
@@ -217,7 +233,7 @@
 
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
 
     gtag('config', 'UA-143248811-1');

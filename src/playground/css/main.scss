@@ -8,6 +8,10 @@ body {
   margin: 0;
 }
 
+.off {
+  display: none;
+}
+
 body .pull-right {
   float: right !important;
 }
@@ -51,6 +55,12 @@ body[data-nav='home'] {
 [data-view='home'] button.live {
   opacity: 1;
   pointer-events: all;
+  width: 100%;
+  background: #eee;
+}
+
+[data-view='home'] [data-has-fb-auth] h6 {
+  text-align: center;
 }
 
 [data-view='home'] .mdc-layout-grid__cell--span-4.mdc-elevation--z4 {

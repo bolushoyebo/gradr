@@ -23,6 +23,8 @@ let testId;
 let GARelay;
 let appUser;
 let provider;
+let gitHubProvider;
+let facebookProvider;
 let uiIsBuilt = false;
 
 dotenv.config();
@@ -37,7 +39,14 @@ const notify = msg => {
   toast.open();
 };
 
-const signIn = () => {
+const signIn = ({target}) => {
+  console.log(target);
+  if(target.hasAttribute('data-gh-auth')) {
+    provider = gitHubProvider;
+  } else if(target.hasAttribute('data-fb-auth')) {
+    provider = facebookProvider;
+  }
+
   if (!provider) return;
 
   firebase
@@ -68,11 +77,16 @@ const signIn = () => {
 const setupSignIn = () => {
   if (uiIsBuilt === true) return;
 
-  const signInBtn = select(`[data-view='home'] button`);
-  if (signInBtn) {
-    signInBtn.addEventListener('click', signIn);
-    signInBtn.classList.add('live');
+  const signInBtns = [select('[data-gh-auth]')];
+  if(facebookProvider) {
+    select('[data-has-fb-auth]').classList.remove('off');
+    signInBtns.push(select('[data-fb-auth]'));
   }
+
+  signInBtns.forEach(btn => {
+    btn.addEventListener('click', signIn);
+    btn.classList.add('live');
+  });
   uiIsBuilt = true;
 };
 
@@ -148,10 +162,17 @@ const bootstrapAssessment = async user => {
 };
 
 const setupAuthentication = () => {
-  provider = new firebase.auth.GithubAuthProvider();
-  provider.setCustomParameters({
+  gitHubProvider = new firebase.auth.GithubAuthProvider();
+  gitHubProvider.setCustomParameters({
     allow_signup: 'false'
   });
+
+  if(['RLSn4T6mJmQBORq7vnOt'].includes(testId)) {
+    facebookProvider = new firebase.auth.FacebookAuthProvider();
+    facebookProvider.setCustomParameters({
+      allow_signup: 'false'
+    });
+  }
 
   firebase.auth().onAuthStateChanged(user => {
     if (!user) {
@@ -222,8 +243,8 @@ const takeOff = async () => {
         registrations.forEach(registration => registration.unregister());
       }
 
-      const swURL = `${window.location.origin}/sw.js`;
-      navigator.serviceWorker.register(swURL);
+      // const swURL = `${window.location.origin}/sw.js`;
+      // navigator.serviceWorker.register(swURL);
     }
   }
 };
