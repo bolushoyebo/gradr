@@ -166,7 +166,7 @@ const setupAuthentication = () => {
     allow_signup: 'false'
   });
 
-  if(['RLSn4T6mJmQBORq7vnOt'].includes(testId)) {
+  if(['RLSn4T6mJmQBORq7vnOt', 'Tmco6C1YrgWCI97pT9T8'].includes(testId)) {
     facebookProvider = new firebase.auth.FacebookAuthProvider();
     facebookProvider.setCustomParameters({
       allow_signup: 'false'
